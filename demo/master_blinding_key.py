@@ -9,7 +9,7 @@ WIF_FLAG_COMPRESSED = int('00', 16)
 BIP32_VER_TEST_PRIVATE = int("04358394", 16)
 BIP32_FLAG_KEY_PRIVATE = int('00', 16)
 
-dir = path.expandvars('$PWD/')
+dir = path.expandvars('$PWD')
 dump_file1 = dir + 'test_dump'
 dump_file2 = dir + 'test_dump2'
 dump_file3 = dir + 'test_dump3'
