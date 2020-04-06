@@ -4,7 +4,7 @@ b-dae && sleep 2 && e1-dae && e2-dae && e3-dae
 
 sleep 5
 
-generate1
+e1-cli generatetoaddress 1 $(e1-cli getnewaddress)
 
 sleep 1
 
