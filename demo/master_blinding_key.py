@@ -1,7 +1,6 @@
 import wallycore as wally
 from os import urandom, path, remove
 from rpc import RPCHost
-from helper import wif, from_wif
 import re
 
 WIF_VERSION_MAINNET = int('80', 16)
