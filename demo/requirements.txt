@@ -1,7 +1,6 @@
 certifi==2020.4.5
 chardet==3.0.4
 idna==2.9
-pkg-resources==0.0.0
+#pkg-resources
 requests==2.23.0
 urllib3==1.25.8
-wallycore==0.7.7
