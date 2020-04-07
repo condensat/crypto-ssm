@@ -9,7 +9,7 @@ libwally-core: builder
 wallycore: builder
 	docker build -f docker/ubuntu/wallycore.dockerfile . -t wallycore:0.7.7-ubuntu
 
-demo: builder
+demo: wallycore
 	docker build -f docker/ubuntu/demo.dockerfile . -t demo:0.7.7-ubuntu
 
 start: demo
