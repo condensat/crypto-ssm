@@ -14,6 +14,13 @@ def genaddress(args):
       "id": args.id,
   }))
 
+def signtx(args):
+  logging.info("CryptoSSM signtx %s", args.tx)
+  print(json.dumps({
+      "command": "signtx",
+      "tx": args.tx,
+  }))
+
 ### ArgumentParser
 
 parser = argparse.ArgumentParser(prog='ssm')
@@ -40,6 +47,18 @@ parser_gen.add_argument(
         'Related id'
     )
 )
+
+# command signtx
+parser_sign = subparsers.add_parser('signtx', help='Sign the provided tx')
+parser_sign.add_argument(
+    '-tx',
+    '--tx',
+    required=True,
+    help=(
+        'Tx to sign'
+    )
+)
+parser_sign.set_defaults(func=signtx)
 
 args = parser.parse_args()
 levels = {
