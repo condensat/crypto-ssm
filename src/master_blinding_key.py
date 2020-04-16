@@ -194,12 +194,19 @@ print(
 )
 _pass = "password".encode('utf-8')
 salt = "NaCl".encode('utf-8')
-root = bytearray('0'.encode('utf-8') * 32)
+root = bytearray('0'.encode('utf-8') * 64)
 
 #wally.scrypt(_pass, salt, 1024, 8, 16, root)
-root = wally.pbkdf2_hmac_sha256(_pass, salt, 0, 1024)
+root = wally.pbkdf2_hmac_sha512(_pass, salt, 0, 1024)
 
 mnemonic = wally.bip39_mnemonic_from_bytes(None, root[0:32])
+mnemonic_blind = wally.bip39_mnemonic_from_bytes(None, root[32:])
+
+print("We have 2 mnemonics, ", \
+    mnemonic, \
+    "\nand\n", \
+    mnemonic_blind
+    )
 
 seed = bytearray(64)
 wally.bip39_mnemonic_to_seed(mnemonic, "", seed)
@@ -210,10 +217,13 @@ xpriv = wally.bip32_key_from_seed(seed, BIP32_VER_TEST_PRIVATE, 0)
 
 print("the extended master privkey", wally.bip32_key_to_base58(xpriv, BIP32_FLAG_KEY_PRIVATE))
 
+seed_blind = bytearray(64)
 master_blinding_key = bytearray(64)
-master_blinding_key = wally.asset_blinding_key_from_seed(root)
+wally.bip39_mnemonic_to_seed(mnemonic_blind, "", seed_blind)
+master_blinding_key = wally.asset_blinding_key_from_seed(seed_blind)
 
-print("the master blinding key", master_blinding_key.hex())
+print("from the seed", seed_blind, \
+    "we create the master blinding key", master_blinding_key.hex())
 
 # TODO:Derivate addresses with Libwally
 # Blind it
