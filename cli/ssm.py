@@ -1,9 +1,18 @@
 import sys
+import json
 import logging
 import argparse
 
 def main(args):
   logging.info("CryptoSSM start")
+  args.func(args)
+
+def genaddress(args):
+  logging.info("CryptoSSM genaddress %d", args.id)
+  print(json.dumps({
+      "command": "genaddress",
+      "id": args.id,
+  }))
 
 ### ArgumentParser
 
@@ -15,6 +24,20 @@ parser.add_argument(
     help=(
         'Provide logging level.'
         'Example --log debug, default=warning'
+    )
+)
+subparsers = parser.add_subparsers(help='sub-command help')
+
+# command genaddress
+parser_gen = subparsers.add_parser('genaddress', help='Generate new address for provided id')
+parser_gen.set_defaults(func=genaddress)
+parser_gen.add_argument(
+    '-id',
+    '--id',
+    required=True,
+    type=int,
+    help=(
+        'Related id'
     )
 )
 
