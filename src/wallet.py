@@ -55,7 +55,7 @@ class Wallet:
         # might not be an issue though
 
         # The terminology is confusing, I propose the following:
-        # hd_privkey and hd_pubkey are for the masterkeys 
+        # hd_privkey and hd_pubkey are for the first key 
         # (directly parsed from the seed entropy)
         hd_privkey = wally.bip32_key_from_seed(seed, util.BIP32_VER_TEST_PRIVATE, 0)
         master_blinding_key = bytearray(64)
@@ -64,7 +64,7 @@ class Wallet:
         self.hd_privkey = hd_privkey
         self.master_blinding_key = master_blinding_key
 
-        logging.info(f"The generated hdkey is {hd_privkey}")
+        logging.info(f"The generated hdkey is {wally.bip32_key_to_base58(hd_privkey, util.BIP32_FLAG_KEY_PRIVATE)}")
         logging.info(f"The generated master blinding key is {master_blinding_key}")
 
         # Here we use the very simple SLIP-0077 implementation in Libwally
