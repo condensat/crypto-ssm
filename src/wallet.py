@@ -1,14 +1,12 @@
 import wallycore as wally
 import logging
 from os import urandom
-import src.util as util
+import util
 
-NETWORK = [
-    'bitcoin-main',
-    'bitcoin-reg',
-    'elements-main',
-    'elements-reg'    
-]
+NETWORK = {
+    'main': wally.BIP32_VER_MAIN_PRIVATE,
+    'regtest': wally.BIP32_VER_TEST_PRIVATE 
+}
 
 # Generate a new master/blinding masterkeys pair, cf demo
 
@@ -16,14 +14,15 @@ class Wallet:
     def __init__(self, 
                 password="", 
                 salt="", 
-                network='bitcoin-reg',
+                network='regtest',
                 mnemonic=False
                 ):
         # First make sure we know for which network we need a seed
         try:
             assert network in NETWORK
         except AssertionError as e:
-            logging.error(f"Please provide a network in {NETWORK}")
+            logging.error(f"Please provide either 'mainnet' or 'regtest' as a network")
+            return
         self.network = network
         logging.info(f"Network is {self.network}")
 
@@ -57,14 +56,14 @@ class Wallet:
         # The terminology is confusing, I propose the following:
         # hd_privkey and hd_pubkey are for the first key 
         # (directly parsed from the seed entropy)
-        hd_privkey = wally.bip32_key_from_seed(seed, util.BIP32_VER_TEST_PRIVATE, 0)
+        hd_privkey = wally.bip32_key_from_seed(seed, NETWORK.get(self.network), 0)
         master_blinding_key = bytearray(64)
         master_blinding_key = wally.asset_blinding_key_from_seed(seed)
-        
+
         self.hd_privkey = hd_privkey
         self.master_blinding_key = master_blinding_key
 
-        logging.info(f"The generated hdkey is {wally.bip32_key_to_base58(hd_privkey, util.BIP32_FLAG_KEY_PRIVATE)}")
+        logging.info(f"The generated hdkey is {wally.bip32_key_to_base58(hd_privkey, wally.BIP32_FLAG_KEY_PRIVATE)}")
         logging.info(f"The generated master blinding key is {master_blinding_key}")
 
         # Here we use the very simple SLIP-0077 implementation in Libwally
@@ -73,3 +72,12 @@ class Wallet:
 
 
 # Derivate 2 keypairs, one for the transaction, one for its binding
+'''
+if __name__ == "__main__":
+  import logger
+  logger.setup(logger.Args('debug'))
+
+  from collections import namedtuple
+  Args = namedtuple('Args', 'password salt network mnemonic')
+  Wallet(Args('Condensat', 'salt', 'bitcoin-main', False))
+'''
