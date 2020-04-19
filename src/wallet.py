@@ -72,12 +72,3 @@ class Wallet:
 
 
 # Derivate 2 keypairs, one for the transaction, one for its binding
-'''
-if __name__ == "__main__":
-  import logger
-  logger.setup(logger.Args('debug'))
-
-  from collections import namedtuple
-  Args = namedtuple('Args', 'password salt network mnemonic')
-  Wallet(Args('Condensat', 'salt', 'bitcoin-main', False))
-'''
