@@ -3,7 +3,8 @@ ARG LIBWALLY_CORE_VERSION=0.7.7
 FROM wallycore:${LIBWALLY_CORE_VERSION}-ubuntu
 
 RUN apt-get update -yy &&\
-    apt-get install -yy --no-install-recommends python3.6-minimal libpython3.6 python3-pip wget &&\
+    apt-get install -yy --no-install-recommends python3.6-minimal libpython3.6\
+    python3-pip wget redis &&\
     apt-get -yy autoremove &&\
     apt-get -yy clean &&\
     rm -rf /var/lib/apt/lists/* /var/cache/* /tmp/* /usr/share/locale/* /usr/share/man /usr/share/doc /lib/xtables/libip6*
