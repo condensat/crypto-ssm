@@ -24,4 +24,4 @@ COPY cli/ /cli
 
 COPY src/ /cli/src
 
-CMD [ "/bin/bash" ]
+CMD [ "/bin/bash", "-c", "/demo/scripts/launch.sh" ]

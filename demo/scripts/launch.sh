@@ -10,4 +10,4 @@ e1-cli generatetoaddress 1 $(e1-cli getnewaddress)
 
 sleep 1
 
-python3.6m /demo/master_blinding_key.py
+python3.6m /cli/src/master_blinding_key.py
