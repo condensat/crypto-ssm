@@ -26,4 +26,6 @@ COPY cli/ /crypto-ssm/cli
 
 COPY setup.py /crypto-ssm
 
+RUN [ "python3.6m", "-m", "pip", "install", "/crypto-ssm" ]
+
 CMD [ "/bin/bash" ]
