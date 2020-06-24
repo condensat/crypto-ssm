@@ -3,7 +3,7 @@ from cli.exceptions import LiquidSwapError
 
 
 LIQUID_REGTEST_RPC_PORT = 7040
-BITCOIN_REGTEST_RPC_PORT = 18444
+BITCOIN_REGTEST_RPC_PORT = 18443
 CONNECTION_ERROR_MESSAGE = \
     'Unable to connect to Bitcoin/Elements Node. Are you sure you have started the ' \
     'node and the parameters are correct?'
