@@ -3,6 +3,7 @@ import json
 import logging
 import sys
 from collections import namedtuple
+import cli.exceptions
 
 from cli.connect import (
     ConnCtx,
@@ -76,6 +77,42 @@ def getblockcount(obj):
         blockcount = connection.getblockcount()
         click.echo(blockcount)
 
+
+@cli.command(short_help='Import a watch-only address in a Bitcoin/Elements node')
+@click.argument('address')
+@click.argument('pubkey')
+@click.argument('blindingkey')
+@click.pass_obj
+def importAddress(obj, address, pubkey, blindingkey=None):
+    with ConnCtx(obj.credentials, critical) as cc:
+        connection = cc.connection
+        do_initial_checks(connection, obj.is_mainnet, obj.is_bitcoin)
+
+        if obj.is_bitcoin == False and blindingkey == None:
+            raise exceptions.UnexpectedValueError("Please provide a blindingkey for importing Elements address")  
+
+        if connection.getaddressinfo(address).get("ismine") == True:
+            raise exceptions.UnexpectedValueError("Can't import own address")
+        
+        if connection.getaddressinfo(address).get("iswatchonly") == True:
+            raise exceptions.UnexpectedValueError("This address is already watched")
+
+        if obj.is_bitcoin == True:
+            # importaddress
+            connection.importaddress(address)
+            # importpubkey
+            connection.importpubkey(pubkey)
+
+        if obj.is_bitcoin == False:
+            # importaddress
+            connection.importaddress(address)
+            # importpubkey
+            connection.importpubkey(pubkey)
+            # importblindingkey
+            connection.importblindingkey(address, blindingkey)
+            
+        if connection.getaddressinfo(address).get("iswatchonly") == False:
+            raise exceptions.Importfailed("the address couldn't be imported as watch-only")
 
 @cli.command(short_help='Accept a swap')
 @click.argument('payload', type=click.File('r'))
