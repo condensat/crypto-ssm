@@ -86,7 +86,7 @@ class BaseProxy(object):
     def __init__(self,
                  service_url=None,
                  service_port=None,
-                 elements_conf_file=None,
+                 conf_file=None,
                  timeout=DEFAULT_HTTP_TIMEOUT):
 
         # Create a dummy connection early on so if __init__() fails prior to
@@ -97,32 +97,32 @@ class BaseProxy(object):
 
         if service_url is None:
             # Figure out the path to the conf file
-            if elements_conf_file is None:
+            if conf_file is None:
                 if platform.system() == 'Darwin':
-                    elements_conf_file = os.path.expanduser('~/Library/Application Support/Elements/')
+                    conf_file = os.path.expanduser('~/Library/Application Support/Elements/')
                 elif platform.system() == 'Windows':
-                    elements_conf_file = os.path.join(os.environ['APPDATA'], 'Elements')
+                    conf_file = os.path.join(os.environ['APPDATA'], 'Elements')
                 else:
-                    elements_conf_file = os.path.expanduser('~/.elements')
-                elements_conf_file = os.path.join(elements_conf_file, 'elements.conf')
+                    conf_file = os.path.expanduser('~/.elements')
+                conf_file = os.path.join(conf_file, 'elements.conf')
 
             # To avoid backward incompatibilty, try to look for the liquid
             # binaries default dir and conf.
-            if not os.path.exists(elements_conf_file):
+            if not os.path.exists(conf_file):
                 if platform.system() == 'Darwin':
-                    elements_conf_file = os.path.expanduser('~/Library/Application Support/Liquid/')
+                    conf_file = os.path.expanduser('~/Library/Application Support/Liquid/')
                 elif platform.system() == 'Windows':
-                    elements_conf_file = os.path.join(os.environ['APPDATA'], 'Liquid')
+                    conf_file = os.path.join(os.environ['APPDATA'], 'Liquid')
                 else:
-                    elements_conf_file = os.path.expanduser('~/.liquid')
-                elements_conf_file = os.path.join(elements_conf_file, 'liquid.conf')
+                    conf_file = os.path.expanduser('~/.liquid')
+                conf_file = os.path.join(conf_file, 'liquid.conf')
 
-            # Elements Core accepts empty rpcuser, not specified in elements_conf_file
+            # Elements Core accepts empty rpcuser, not specified in conf_file
             conf = {'rpcuser': ""}
 
             # Extract contents of elements.conf to build service_url
             try:
-                with open(elements_conf_file, 'r') as fd:
+                with open(conf_file, 'r') as fd:
                     for line in fd.readlines():
                         if '#' in line:
                             line = line[:line.index('#')]
@@ -152,7 +152,7 @@ class BaseProxy(object):
             if 'rpcwallet' in conf:
                 service_url += ('/wallet/%s' % conf['rpcwallet'])
 
-            cookie_dir = conf.get('datadir', os.path.dirname(elements_conf_file))
+            cookie_dir = conf.get('datadir', os.path.dirname(conf_file))
             cookie_dir = os.path.join(cookie_dir, chain)
             cookie_file = conf.get('rpccookiefile', os.path.join(cookie_dir, ".cookie"))
             try:
@@ -163,7 +163,7 @@ class BaseProxy(object):
                     authpair = "%s:%s" % (conf['rpcuser'], conf['rpcpassword'])
 
                 else:
-                    raise ValueError('Cookie file unusable (%s) and rpcpassword not specified in the configuration file: %r' % (err, elements_conf_file))
+                    raise ValueError('Cookie file unusable (%s) and rpcpassword not specified in the configuration file: %r' % (err, conf_file))
 
         else:
             url = urlparse.urlparse(service_url)
@@ -261,12 +261,12 @@ class RawProxy(BaseProxy):
     def __init__(self,
                  service_url=None,
                  service_port=None,
-                 elements_conf_file=None,
+                 conf_file=None,
                  timeout=DEFAULT_HTTP_TIMEOUT,
                  **kwargs):
         super(RawProxy, self).__init__(service_url=service_url,
                                        service_port=service_port,
-                                       elements_conf_file=elements_conf_file,
+                                       conf_file=conf_file,
                                        timeout=timeout,
                                        **kwargs)
 
