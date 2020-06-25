@@ -26,42 +26,25 @@ def critical(title='', message='', start_over=True):
         sys.exit(1)
 
 
-ConnParams = namedtuple('ConnParams', ['credentials', 'is_mainnet', 'is_bitcoin'])
+ConnParams = namedtuple('ConnParams', ['chain'])
 
 
 @click.group()
-@click.option('-u', '--service-url', default=None, type=str,
-              help='Specify Bitcoin/Elements node URL for authentication.')
-@click.option('-c', '--conf-file', default=None, type=str,
-              help='Specify bitcoin.conf/elements.conf file for authentication.')
-@click.option('-r', '--regtest', is_flag=True, help='Use with regtest.')
-@click.option('-l', '--liquid', is_flag=True, help='Set network to Liquid (Elements),' 
-                'or Bitcoin if false.')
+@click.option('-c', '--chain', required=True, type=click.Choice(CHAINS),
+                help='Define the chain we\'re on out of a list.')
 @click.option('-v', '--verbose', count=True,
               help='Print more information, may be used multiple times.')
 @click.version_option()
 @click.pass_context
-def cli(ctx, service_url, conf_file, regtest, verbose, liquid):
+def cli(ctx, verbose, chain):
     """Crypto SSM Command-Line Interface
     """
 
     set_logging(verbose)
 
-    is_mainnet = not regtest
-    is_bitcoin = not liquid
-    if not is_mainnet and is_bitcoin:
-        service_port = BITCOIN_REGTEST_RPC_PORT
-    elif not is_mainnet and not is_bitcoin:
-        service_port = LIQUID_REGTEST_RPC_PORT
-    elif is_mainnet:
-        service_port = None
-    credentials = {
-        'conf_file': conf_file,
-        'service_url': service_url,
-        'service_port': service_port,
-    }
+    logging.info(f"Working on {chain}")
     
-    ctx.obj = ConnParams(credentials, is_mainnet, is_bitcoin)
+    ctx.obj = ConnParams(chain)
 
 
 @cli.command(short_help='Get block height')
