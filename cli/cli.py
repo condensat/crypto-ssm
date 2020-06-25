@@ -3,7 +3,8 @@ import json
 import logging
 import sys
 from collections import namedtuple
-import cli.exceptions
+import cli.exceptions as exceptions
+import cli.ssm as ssm
 
 from cli.connect import (
     ConnCtx,
@@ -12,6 +13,7 @@ from cli.connect import (
 )
 
 from cli.util import (
+    CHAINS,
     set_logging,
     do_initial_checks,
 )
