@@ -3,7 +3,8 @@ import json
 import logging
 import sys
 from collections import namedtuple
-import cli.exceptions
+import cli.exceptions as exceptions
+import cli.ssm as ssm
 
 from cli.connect import (
     ConnCtx,
@@ -12,8 +13,8 @@ from cli.connect import (
 )
 
 from cli.util import (
+    CHAINS,
     set_logging,
-    do_initial_checks,
 )
 
 def critical(title='', message='', start_over=True):
@@ -67,5 +68,4 @@ def new_master(obj, entropy, isbytes):
     logging.info(f"New master key generated for {chain}! Fingerprint: {fingerprint}")
 
     # TODO: save the fingerprint on db
-        if connection.getaddressinfo(address).get("iswatchonly") == False:
-            raise exceptions.Importfailed("the address couldn't be imported as watch-only")
+
