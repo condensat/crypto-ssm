@@ -3,8 +3,7 @@ import json
 import logging
 import sys
 from collections import namedtuple
-import cli.exceptions as exceptions
-import cli.ssm as ssm
+import cli.exceptions
 
 from cli.connect import (
     ConnCtx,
@@ -13,7 +12,6 @@ from cli.connect import (
 )
 
 from cli.util import (
-    CHAINS,
     set_logging,
     do_initial_checks,
 )
@@ -49,52 +47,25 @@ def cli(ctx, verbose, chain):
     ctx.obj = ConnParams(chain)
 
 
-@cli.command(short_help='Get block height')
+@cli.command(short_help='Generate a new seed and master key for the chain')
+@click.option('-e', '--entropy', required=True,
+                help='Either a password or some entropy to use for seed generation.')
+@click.option('-b', 'isbytes', is_flag=True,
+                help='If set, entropy is to be treated as an hex byte string rather than a password.')
 @click.pass_obj
-def getblockcount(obj):
-    """Get the current block height
+def new_master(obj, entropy, isbytes):
+    """Generate a new seed and the corresponding master key for BIP32 derivation.
+    The new seed can use either a password and a salt, or some entropy (at least 32B).
+    At least one of 2 is required.
+    Return value is the fingerprint of the new master key.
     """
 
-    with ConnCtx(obj.credentials, critical) as cc:
-        connection = cc.connection
-        do_initial_checks(connection, obj.is_mainnet, obj.is_bitcoin)
+    logging.info(f"Generating a new master key for {chain}.")
 
-        blockcount = connection.getblockcount()
-        click.echo(blockcount)
+    fingerprint = ssm.generate_new_hd_wallet(obj.chain, entropy, isbytes)
 
+    logging.info(f"New master key generated for {chain}! Fingerprint: {fingerprint}")
 
-@cli.command(short_help='Import a watch-only address in a Bitcoin/Elements node')
-@click.argument('address')
-@click.argument('pubkey')
-@click.argument('blindingkey')
-@click.pass_obj
-def importAddress(obj, address, pubkey, blindingkey=None):
-    with ConnCtx(obj.credentials, critical) as cc:
-        connection = cc.connection
-        do_initial_checks(connection, obj.is_mainnet, obj.is_bitcoin)
-
-        if obj.is_bitcoin == False and blindingkey == None:
-            raise exceptions.UnexpectedValueError("Please provide a blindingkey for importing Elements address")  
-
-        if connection.getaddressinfo(address).get("ismine") == True:
-            raise exceptions.UnexpectedValueError("Can't import own address")
-        
-        if connection.getaddressinfo(address).get("iswatchonly") == True:
-            raise exceptions.UnexpectedValueError("This address is already watched")
-
-        if obj.is_bitcoin == True:
-            # importaddress
-            connection.importaddress(address)
-            # importpubkey
-            connection.importpubkey(pubkey)
-
-        if obj.is_bitcoin == False:
-            # importaddress
-            connection.importaddress(address)
-            # importpubkey
-            connection.importpubkey(pubkey)
-            # importblindingkey
-            connection.importblindingkey(address, blindingkey)
-            
+    # TODO: save the fingerprint on db
         if connection.getaddressinfo(address).get("iswatchonly") == False:
             raise exceptions.Importfailed("the address couldn't be imported as watch-only")
