@@ -1,11 +1,14 @@
 import wallycore as wally
 import cli.exceptions as exceptions
 import logging
+from os import urandom, path
 from cli.util import (
     CHAINS,
     save_to_disk,
     retrieve_from_disk,
+    harden_path,
     bin_to_hex,
+    check_dir
 )
 
 PREFIXES = {
@@ -20,6 +23,7 @@ PREFIXES = {
 
 SALT_LEN = 32
 HMAC_COST = 2048
+KEYS_DIR = "/ssm-keys"
 
 def generate_entropy_from_password(password):
     """we can generate entropy from some password. The randomly generated salt also need to be saved.
@@ -35,7 +39,7 @@ def generate_entropy_from_password(password):
     _pass = password.encode('utf-8')
     logging.info(f"Generating salt of {SALT_LEN} bytes")
     salt = bytearray(urandom(SALT_LEN))
-    logging.info(f"Salt is {salt}")
+    logging.info(f"Salt is {bin_to_hex(salt)}")
     # TODO: Save the salt on a file or db
 
     # Let's generate entropy from the provided password
@@ -73,9 +77,12 @@ def generate_masterkey_from_mnemonic(mnemonic, chain):
     fingerprint = bytearray(4)
     wally.bip32_key_get_fingerprint(master_key_private, fingerprint)
 
-    # dump the hdkey to disk. filename is key fingerprint
-    #data = wally.bip32_key_serialize(master_key_private, wally.bip32_FLAG_KEY_PRIVATE)
-    save_to_disk(master_key_private, fingerprint)
+    # dump the hdkey to disk. Create a dir for each chain, filename is key fingerprint
+    master_key_bin = wally.bip32_key_serialize(master_key_private, wally.BIP32_FLAG_KEY_PRIVATE)
+    dir = path.join(KEYS_DIR, chain)
+    check_dir(dir)
+    filename = path.join(dir, str(bin_to_hex(fingerprint)))
+    save_to_disk(master_key_bin, filename)
 
     # If chain is Elements, we can also derive the blinding key from the same seed
     if chain in ['liquidv1', 'elements-regtest']:
