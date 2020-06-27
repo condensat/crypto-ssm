@@ -24,12 +24,6 @@ HMAC_COST = 2048
 def generate_entropy_from_password(password):
     """we can generate entropy from some password. The randomly generated salt also need to be saved.
     """
-    # First make sure we know for which network we need a seed
-    try:
-        assert chain in CHAINS
-    except AssertionError:
-        raise exceptions.UnexpectedValueError("Unknown chain.")
-
     # Fail if password is None or empty
     if len(password) < 1:
         logging.error("You provided no password")
@@ -105,6 +99,15 @@ def get_address_from_path(chain, fingerprint, path, hardened=True):
     return address
 
 def generate_new_hd_wallet(chain, entropy, is_bytes):
+    # First make sure we know for which network we need a seed
+    try:
+        assert chain in CHAINS
+    except AssertionError:
+        raise exceptions.UnexpectedValueError("Unknown chain.")
+
+    # Check that the ssm-keys dir exists, create it if necessary
+    check_dir(KEYS_DIR)
+
     if is_bytes == True:
         mnemonic = generate_mnemonic_from_entropy(entropy)
     else:
