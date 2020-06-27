@@ -10,6 +10,14 @@ from cli.exceptions import (
     OwnProposalError,
 )
 
+CHAINS = [
+    'bitcoin-main', 
+    'bitcoin-test', 
+    'bitcoin-regtest', 
+    'liquidv1', 
+    'elements-regtest',
+]
+
 
 def btc2sat(btc):
     return round(btc * 10**8)
