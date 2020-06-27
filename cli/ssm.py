@@ -21,8 +21,6 @@ PREFIXES = {
 SALT_LEN = 32
 HMAC_COST = 2048
 
-# Generate a new master/blinding masterkeys pair, cf demo
-
 def generate_entropy_from_password(password):
     """we can generate entropy from some password. The randomly generated salt also need to be saved.
     """
@@ -55,6 +53,7 @@ def generate_entropy_from_password(password):
 def generate_mnemonic_from_entropy(entropy):
     """Generate a mnemonic of either 12 or 24 words.
     We can feed it the entropy we generated from a password or another way.
+    We should generate 24 words if we want it to be compatible with Ledger
     """
     if len(entropy) not in [16, 32]:
         raise exceptions.UnexpectedValueError(f"Entropy is {len(entropy)}. "
@@ -87,6 +86,8 @@ def generate_masterkey_from_mnemonic(mnenonic, chain):
     if chain in ['liquidv1', 'elements-regtest']:
         master_blinding_key = bytearray(64)
         master_blinding_key = wally.asset_blinding_key_from_seed(seed) # SLIP-077 derivation
+
+    # TODO: what if we lose the seed? 
 
     # We return the fingerprint only to the caller and keep the keys here
     return fingerprint
