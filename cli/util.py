@@ -1,4 +1,5 @@
 import logging
+import pickle
 
 from cli.exceptions import (
     UnexpectedValueError,
@@ -83,18 +84,11 @@ def set_logging(verbose):
         logging.root.setLevel(logging.DEBUG)
 
 
-#def compute_receiver_fee(connection, tx, proposer_fee):
-#    """Compute transaction fees of an accepted proposal
-#    """
-#
-#    outputs = connection.decoderawtransaction(tx)['vout']
-#    fees = [o['value'] for o in outputs if o['scriptPubKey']['type'] == 'fee']
-#    if len(fees) != 1:
-#        raise UnexpectedValueError('Missing fee')
-#    receiver_fee = btc2sat(fees[0]) - proposer_fee
-#    if receiver_fee <= 0:
-#        msg = 'Proposer fee higher than transaction fee ({}, {})'.format(
-#            proposer_fee, btc2sat(fees[0]))
-#        raise UnexpectedValueError(msg)
-#    return receiver_fee
-#
+def save_to_disk(data, file):
+    with open(file, 'wb') as f:
+        pickle.dump(data, f, pickle.HIGHEST_PROTOCOL)
+
+def retrieve_from_disk(file):
+    with open(file, 'rb') as f:
+        data = pickle.load(f)
+    return data
