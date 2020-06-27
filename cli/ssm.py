@@ -62,7 +62,7 @@ def generate_mnemonic_from_entropy(entropy):
     logging.info(f"mnemonic generated from entropy.")
     return mnemonic
 
-def generate_masterkey_from_mnemonic(mnenonic, chain):
+def generate_masterkey_from_mnemonic(mnemonic, chain):
     """Generate a masterkey pair + a master blinding key if chain is Elements.
     """
     if chain in ['bitcoin-main', 'liquidv1']:
@@ -108,6 +108,6 @@ def generate_new_hd_wallet(chain, entropy, is_bytes):
     if is_bytes == True:
         mnemonic = generate_mnemonic_from_entropy(entropy)
     else:
-        mnemonic = generate_mnemonic_from_entropy(generate_entropy_from_password(entropy))
+        mnemonic = generate_mnemonic_from_entropy(generate_entropy_from_password(entropy)[:32])
     
     return generate_masterkey_from_mnemonic(mnemonic, chain)
