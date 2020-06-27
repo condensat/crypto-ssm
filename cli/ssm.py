@@ -5,7 +5,7 @@ from cli.util import (
     CHAINS,
     save_to_disk,
     retrieve_from_disk,
-    harden_path
+    bin_to_hex,
 )
 
 PREFIXES = {
@@ -70,7 +70,8 @@ def generate_masterkey_from_mnemonic(mnemonic, chain):
 
     # Now let's derivate the master privkey from seed
     master_key_private = wally.bip32_key_from_seed(seed, version, 0)
-    fingerprint = wally.bip32_key_get_fingerprint(master_key_private)
+    fingerprint = bytearray(4)
+    wally.bip32_key_get_fingerprint(master_key_private, fingerprint)
 
     # dump the hdkey to disk. filename is key fingerprint
     #data = wally.bip32_key_serialize(master_key_private, wally.bip32_FLAG_KEY_PRIVATE)
@@ -84,7 +85,7 @@ def generate_masterkey_from_mnemonic(mnemonic, chain):
     # TODO: what if we lose the seed? 
 
     # We return the fingerprint only to the caller and keep the keys here
-    return fingerprint
+    return str(bin_to_hex(fingerprint))
 
 def get_address_from_path(chain, fingerprint, path, hardened=True):
     masterkey = retrieve_from_disk(fingerprint)
