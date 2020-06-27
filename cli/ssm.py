@@ -2,7 +2,10 @@ import wallycore as wally
 import cli.exceptions as exceptions
 import logging
 from cli.util import (
-    NETWORKS,
+    CHAINS,
+    save_to_disk,
+    retrieve_from_disk,
+    harden_path
 )
 
 PREFIXES = {
@@ -76,7 +79,9 @@ def generate_masterkey_from_mnemonic(mnenonic, chain):
     master_key_private = wally.bip32_key_from_seed(seed, version, 0)
     fingerprint = wally.bip32_key_get_fingerprint(master_key_private)
 
-    # TODO: how to save the keys?
+    # dump the hdkey to disk. filename is key fingerprint
+    #data = wally.bip32_key_serialize(master_key_private, wally.bip32_FLAG_KEY_PRIVATE)
+    save_to_disk(master_key_private, fingerprint)
 
     # If chain is Elements, we can also derive the blinding key from the same seed
     if chain in ['liquidv1', 'elements-regtest']:
@@ -87,8 +92,11 @@ def generate_masterkey_from_mnemonic(mnenonic, chain):
     return fingerprint
 
 def get_address_from_path(chain, fingerprint, path, hardened=True):
-    # TODO: fetch the master key from its fingerprint in db
-    child = wally.bip32_key_from_parent_path(masterkey, path, wally.bip32_FLAG_KEY_PRIVATE)
+    masterkey = retrieve_from_disk(fingerprint)
+    if hardened == False:
+        child = wally.bip32_key_from_parent_path(masterkey, path, wally.bip32_FLAG_KEY_PRIVATE)
+    else:
+        child = wally.bip32_key_from_parent_path(masterkey, harden_path(path), wally.bip32_FLAG_KEY_PRIVATE)
 
     # get a new segwit native address from the child
     address = wally.bip32_key_to_addr_segwit(child, prefix.get(chain), 0)
