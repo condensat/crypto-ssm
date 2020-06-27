@@ -83,6 +83,13 @@ def set_logging(verbose):
     elif verbose > 1:
         logging.root.setLevel(logging.DEBUG)
 
+def harden_path(path):
+    hardened = []
+    for index in path:
+        if index >= pow(2, 31):
+            raise UnexpectedValueError("Can't harden an index greater than 2^31 - 1")
+        hardened.append(index + pow(2, 31))
+    return hardened
 
 def save_to_disk(data, file):
     with open(file, 'wb') as f:
