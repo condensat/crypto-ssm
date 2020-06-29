@@ -1,6 +1,7 @@
 import logging
 import pickle
 from binascii import hexlify, unhexlify
+from os import path, mkdir
 
 from cli.exceptions import (
     UnexpectedValueError,
@@ -109,4 +110,4 @@ def retrieve_from_disk(file):
         data = pickle.load(f)
     return data
 def bin_to_hex(bin):
-    return hexlify(bin)
+    return bin.hex()
