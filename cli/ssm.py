@@ -113,7 +113,11 @@ def get_address_from_path(chain, fingerprint, derivation_path, hardened=True):
     # get a new segwit native address from the child
     address = wally.bip32_key_to_addr_segwit(child, PREFIXES.get(chain), 0)
 
-    return address, None, None
+    # get the pubkey
+    privkey = wally.bip32_key_get_priv_key(child)
+    pubkey = wally.ec_public_key_from_private_key(privkey)
+
+    return address, bytes(pubkey).hex(), None
 
 def generate_new_hd_wallet(chain, entropy, is_bytes):
     # First make sure we know for which network we need a seed
