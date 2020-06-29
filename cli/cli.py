@@ -65,7 +65,35 @@ def new_master(obj, entropy, isbytes):
 
     fingerprint = ssm.generate_new_hd_wallet(obj.chain, entropy, isbytes)
 
-    logging.info(f"New master key generated for {chain}! Fingerprint: {fingerprint}")
+    logging.info(f"New master key generated for {obj.chain}! Fingerprint: {fingerprint}")
 
-    # TODO: save the fingerprint on db
+@cli.command(short_help='Generate a new address for chain and master key')
+@click.option('-f', '--fingerprint', required=True,
+                help='A 4B fingerprint that identifies the master key.')
+@click.option('-p', '--path',
+                help='The path of the address to derivate.')
+@click.option('--hardened/--not-hardened', default=True,
+                help='If the address must be derived using hardened path.')
+@click.pass_obj
+def new_address(obj, fingerprint, path, hardened):
+    """Get new address for a said chain and masterkey.
+    Each masterkey is identified through its fingerprint that have been returned when it was created.
+    Return value is a new segwit native address, along with other information that might be necessary
+    to import it as watch only:
+    - the pubkey for Bitcoin and Elements address
+    - the blinding private key for Elements address only
+    """
 
+    logging.info(f"Generating a new address for {obj.chain} and master key {fingerprint}.")
+
+    address, pubkey, bkey = ssm.get_address_from_path(obj.chain, fingerprint, path, hardened)
+
+    logging.info(f"New address for {obj.chain}: {address}, pubkey: {pubkey}, blinding key: {bkey}")
+
+    return_value = {
+        'address': address,
+        'pubkey': pubkey,
+        'blinding_key': bkey
+    }
+
+    click.echo(return_value)
