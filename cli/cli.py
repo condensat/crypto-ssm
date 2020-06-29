@@ -31,8 +31,8 @@ ConnParams = namedtuple('ConnParams', ['chain'])
 
 
 @click.group()
-@click.option('-c', '--chain', required=True, type=click.Choice(CHAINS),
-                help='Define the chain we\'re on out of a list.')
+@click.option('-c', '--chain', default='bitcoin-main', type=click.Choice(CHAINS),
+                help='Define the chain we\'re on out of a list (default = \'bitcoin-main\').')
 @click.option('-v', '--verbose', count=True,
               help='Print more information, may be used multiple times.')
 @click.version_option()
