@@ -111,3 +111,23 @@ def retrieve_from_disk(file):
     return data
 def bin_to_hex(bin):
     return bin.hex()
+
+def check_dir(keys_dir):
+    if path.isdir(keys_dir) == False:
+        rights = 0o600
+        try:
+            mkdir(keys_dir, rights)
+        except OSError:
+            print(f"Can't create {keys_dir}")
+    return True
+
+def parse_path(path):
+    lpath = []
+    if path.find('/') >= 0:
+        strpath = path.split('/')
+        for idx in strpath:
+            lpath.append(int(idx))
+    else:
+        lpath.append(int(path))
+    print(lpath)
+    return lpath
