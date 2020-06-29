@@ -1,5 +1,4 @@
 import logging
-import pickle
 from binascii import hexlify, unhexlify
 from os import path, mkdir
 
@@ -103,12 +102,13 @@ def harden_path(path):
 
 def save_to_disk(data, file):
     with open(file, 'wb') as f:
-        pickle.dump(data, f, pickle.HIGHEST_PROTOCOL)
+        f.write(data)
 
 def retrieve_from_disk(file):
     with open(file, 'rb') as f:
-        data = pickle.load(f)
+        data = f.read()
     return data
+
 def bin_to_hex(bin):
     return bin.hex()
 
