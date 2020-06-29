@@ -61,7 +61,7 @@ def new_master(obj, entropy, isbytes):
     Return value is the fingerprint of the new master key.
     """
 
-    logging.info(f"Generating a new master key for {chain}.")
+    logging.info(f"Generating a new master key for {obj.chain}.")
 
     fingerprint = ssm.generate_new_hd_wallet(obj.chain, entropy, isbytes)
 
