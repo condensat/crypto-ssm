@@ -17,6 +17,7 @@ from cli.util import (
 SALT_LEN = 32
 HMAC_COST = 2048
 KEYS_DIR = "/ssm-keys"
+BLINDING_KEYS_DIR = "blinding_keys"
 
 def generate_entropy_from_password(password):
     """we can generate entropy from some password. The randomly generated salt also need to be saved.
