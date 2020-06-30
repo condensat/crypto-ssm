@@ -33,14 +33,13 @@ def generate_entropy_from_password(password):
     _pass = password.encode('utf-8')
     logging.info(f"Generating salt of {SALT_LEN} bytes")
     salt = bytearray(urandom(SALT_LEN))
-    logging.info(f"Salt is {bin_to_hex(salt)}")
-    # TODO: Save the salt on a file or db
+    logging.debug(f"Salt is {bin_to_hex(salt)}")
 
     # Let's generate entropy from the provided password
     entropy = bytearray('0'.encode('utf-8') * 64)
     entropy = wally.pbkdf2_hmac_sha512(_pass, salt, 0, HMAC_COST)
 
-    return entropy
+    return entropy, salt
 
 def generate_mnemonic_from_entropy(entropy):
     """Generate a mnemonic of either 12 or 24 words.
@@ -154,11 +153,24 @@ def generate_new_hd_wallet(chain, entropy, is_bytes):
     check_dir(KEYS_DIR)
 
     if is_bytes == True:
-        mnemonic = generate_mnemonic_from_entropy(entropy)
+        # This can be useful for testing, but it is not recommended for production since the 
+        # entropy that is passed in argument is not salted
+        mnemonic = generate_mnemonic_from_entropy(bytes.fromhex(entropy))
+        salt = None
     else:
-        mnemonic = generate_mnemonic_from_entropy(generate_entropy_from_password(entropy)[:32])
+        stretched_key, salt = generate_entropy_from_password(entropy)
+        mnemonic = generate_mnemonic_from_entropy(stretched_key[:32])
     
-    return generate_masterkey_from_mnemonic(mnemonic, chain)
+    fingerprint = generate_masterkey_from_mnemonic(mnemonic, chain)
+
+    if salt:
+        # We now save the salt in a file under the fingerprint name
+        dir = path.join(KEYS_DIR, 'salts')
+        check_dir(dir)
+        filename = path.join(dir, fingerprint)
+        save_to_disk(salt, filename)
+
+    return fingerprint
 
 def get_xpub(chain, fingerprint):
     dir = path.join(KEYS_DIR, chain)
@@ -166,7 +178,5 @@ def get_xpub(chain, fingerprint):
     filename = path.join(dir, fingerprint)
     master_key_bin = retrieve_from_disk(filename)
     masterkey = wally.bip32_key_unserialize(master_key_bin)
-    # strip the xpriv to keep only the xpub
-    # xpub = wally.bip32_key_strip_private_key(masterkey)
     # now return the xpub in its base58 readable format
     return wally.bip32_key_to_base58(masterkey, wally.BIP32_FLAG_KEY_PUBLIC)
