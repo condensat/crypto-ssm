@@ -15,6 +15,7 @@ from cli.connect import (
 from cli.util import (
     CHAINS,
     set_logging,
+    encode_payload,
 )
 
 def critical(title='', message='', start_over=True):
@@ -67,6 +68,8 @@ def new_master(obj, entropy, isbytes):
 
     fingerprint = ssm.generate_new_hd_wallet(obj.chain, entropy, isbytes)
 
+    click.echo(encode_payload(fingerprint))
+
     logging.info(f"New master key generated for {obj.chain}! Fingerprint: {fingerprint}")
 
 @cli.command(short_help='Generate a new address for chain and master key')
@@ -100,7 +103,7 @@ def new_address(obj, fingerprint, path, hardened):
 
     logging.debug(return_value)
 
-    click.echo(return_value)
+    click.echo(encode_payload(return_value))
 
 @cli.command(short_help='Get the extended public key (xpub) that corresponds to some master key.')
 @click.option('-f', '--fingerprint', required=True,
@@ -117,4 +120,6 @@ def get-xpub(obj, fingerprint):
 
     xpub = ssm.get_xpub(obj.chain, fingerprint)
 
-    print(json.dumps(xpub))
+    logging.debug(f"{obj.chain} xpub is {xpub}")
+
+    click.echo(encode_payload(xpub))

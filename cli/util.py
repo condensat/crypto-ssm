@@ -1,4 +1,4 @@
-import logging
+import logging, json
 from binascii import hexlify, unhexlify
 from os import path, mkdir
 
@@ -134,3 +134,10 @@ def parse_path(path):
     else:
         lpath.append(int(path))
     return lpath
+
+def encode_payload(data):
+    json_data = json.dumps(data)
+    data_bytes = bytes(json_data, 'utf-8')
+    data_hex = data_bytes.hex()
+
+    return data_hex
