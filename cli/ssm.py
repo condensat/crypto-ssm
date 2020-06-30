@@ -105,10 +105,7 @@ def generate_masterkey_from_mnemonic(mnemonic, chain):
 
     # If chain is Elements, we can also derive the blinding key from the same seed
     if chain in ['liquidv1', 'elements-regtest']:
-        master_blinding_key = bytearray(64)
-        master_blinding_key = wally.asset_blinding_key_from_seed(seed) # SLIP-077 derivation
-
-    # TODO: what if we lose the seed? 
+        generate_master_blinding_key_from_seed(seed, chain, str(fingerprint.hex()))
 
     # We return the fingerprint only to the caller and keep the keys here
     return str(bin_to_hex(fingerprint))
@@ -132,10 +129,22 @@ def get_address_from_path(chain, fingerprint, derivation_path, hardened=True):
     address = wally.bip32_key_to_addr_segwit(child, PREFIXES.get(chain), 0)
 
     # get the pubkey
-    privkey = wally.bip32_key_get_priv_key(child)
-    pubkey = wally.ec_public_key_from_private_key(privkey)
+    pubkey = wally.ec_public_key_from_private_key(wally.bip32_key_get_priv_key(child))
+    
+    # If Elements, get the blinding key, and create the corresponding confidential address
+    if chain in ['liquidv1', 'elements-regtest']:
+        blinding_privkey = get_blinding_key_from_address(address, chain, fingerprint)
+        blinding_pubkey = wally.ec_public_key_from_private_key(blinding_privkey)
+        address = wally.confidential_addr_from_addr_segwit(
+                                                            address, 
+                                                            PREFIXES.get(chain),
+                                                            CA_PREFIXES.get(chain), 
+                                                            blinding_pubkey
+                                                        )
+    else:
+        blinding_privkey = None
 
-    return address, bytes(pubkey).hex(), None
+    return address, pubkey, blinding_privkey
 
 def generate_new_hd_wallet(chain, entropy, is_bytes):
     # First make sure we know for which network we need a seed
