@@ -90,7 +90,7 @@ def set_logging(verbose):
     """Set logging level
     """
 
-    logging.basicConfig(format='liquidswap %(levelname)s %(message)s')
+    logging.basicConfig(format='SSM %(levelname)s %(message)s')
     if verbose == 1:
         logging.root.setLevel(logging.INFO)
     elif verbose > 1:

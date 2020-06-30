@@ -48,8 +48,8 @@ class ConnCtx(object):
             self.critical(title='Elements Node Error',
                           message=value.error.get('message'),
                           start_over=self.start_over)
-        elif issubclass(typ, LiquidSwapError):
-            self.critical(title='Swap Error',
+        elif issubclass(typ, SsmError):
+            self.critical(title='SSM Error',
                           message=str(value),
                           start_over=self.start_over)
         elif issubclass(typ, Exception):
