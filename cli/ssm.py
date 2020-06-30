@@ -169,4 +169,4 @@ def get_xpub(chain, fingerprint):
     # strip the xpriv to keep only the xpub
     # xpub = wally.bip32_key_strip_private_key(masterkey)
     # now return the xpub in its base58 readable format
-    return wally.bip32_key_to_base58(masterkey, BIP32_FLAG_KEY_PUBLIC)
+    return wally.bip32_key_to_base58(masterkey, wally.BIP32_FLAG_KEY_PUBLIC)
