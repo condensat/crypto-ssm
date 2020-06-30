@@ -42,13 +42,6 @@ def is_mine(address, connection):
     return connection.getaddressinfo(address)['ismine']
 
 
-#def check_not_mine(address, connection):
-#    """Raise an OwnProposalError if address is owned by the wallet
-#    """
-#    if is_mine(address, connection):
-#        raise OwnProposalError(OWN_PROPOSAL_ERROR_MSG)
-
-
 def check_wallet_unlocked(connection):
     """Raise error if wallet is locked
     """
@@ -80,7 +73,6 @@ def do_initial_checks(connection, expect_mainnet, expect_network):
     """Do initial checks
     """
     check_network(expect_mainnet, expect_network, connection)
-
 
 def set_logging(verbose):
     """Set logging level
@@ -129,5 +121,4 @@ def parse_path(path):
             lpath.append(int(idx))
     else:
         lpath.append(int(path))
-    print(lpath)
     return lpath
