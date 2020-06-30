@@ -90,12 +90,12 @@ def new_address(obj, fingerprint, path, hardened):
 
     address, pubkey, bkey = ssm.get_address_from_path(obj.chain, fingerprint, path, hardened)
 
-    logging.info(f"New address for {obj.chain}: {address}, pubkey: {pubkey}, blinding key: {bkey}")
-
     return_value = {
         'address': address,
-        'pubkey': pubkey,
-        'blinding_key': bkey
+        'pubkey': bytes(pubkey).hex()
     }
+
+    if bkey is not None:
+        return_value['blinding_key'] = bytes(bkey).hex()
 
     click.echo(return_value)
