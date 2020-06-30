@@ -55,6 +55,30 @@ def generate_mnemonic_from_entropy(entropy):
     logging.debug(f"Mnenonic is {' '.join(mnemonic)}")
     return mnemonic
 
+def generate_master_blinding_key_from_seed(seed, chain, fingerprint):
+    """Generate the master blinding key from the seed, and save it to disk
+    """
+    master_blinding_key = bytearray(64)
+    master_blinding_key = wally.asset_blinding_key_from_seed(seed) # SLIP-077 derivation
+
+    # Save the blinding key to disk in a separate dir
+    dir = path.join(KEYS_DIR, BLINDING_KEYS_DIR)
+    check_dir(dir)
+    filename = path.join(dir, fingerprint)
+    save_to_disk(master_blinding_key, filename)
+
+def get_blinding_key_from_address(address, chain, fingerprint):
+    # First retrieve the master blinding key from disk
+    dir = path.join(KEYS_DIR, BLINDING_KEYS_DIR)
+    check_dir(dir)
+    filename = path.join(dir, fingerprint)
+    master_key = retrieve_from_disk(filename)
+    # Next we compute the blinding keys for the address
+    script_pubkey = wally.addr_segwit_to_bytes(address, PREFIXES.get(chain), 0)
+    private_blinding_key = wally.asset_blinding_key_to_ec_private_key(master_key, script_pubkey)
+
+    return private_blinding_key
+
 def generate_masterkey_from_mnemonic(mnemonic, chain):
     """Generate a masterkey pair + a master blinding key if chain is Elements.
     """
