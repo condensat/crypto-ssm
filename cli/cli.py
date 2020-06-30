@@ -98,4 +98,6 @@ def new_address(obj, fingerprint, path, hardened):
     if bkey is not None:
         return_value['blinding_key'] = bytes(bkey).hex()
 
+    logging.debug(return_value)
+
     click.echo(return_value)
