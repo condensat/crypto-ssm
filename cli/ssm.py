@@ -4,6 +4,8 @@ import logging
 from os import urandom, path
 from cli.util import (
     CHAINS,
+    PREFIXES,
+    CA_PREFIXES,
     save_to_disk,
     retrieve_from_disk,
     harden_path,
@@ -11,16 +13,6 @@ from cli.util import (
     check_dir,
     parse_path
 )
-
-PREFIXES = {
-    'bitcoin-main': 'bc',
-    'bitcoin-test': 'tb',
-    'bitcoin-regtest': 'bcrt',
-    'liquidv1': 'ex',
-    'elements-regtest': 'ert',
-    'liquidv1-confidential': 'lq',
-    'elements-regtest-confidential': 'el'
-}
 
 SALT_LEN = 32
 HMAC_COST = 2048
