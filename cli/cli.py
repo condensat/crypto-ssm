@@ -27,17 +27,19 @@ def critical(title='', message='', start_over=True):
         sys.exit(1)
 
 
-ConnParams = namedtuple('ConnParams', ['chain'])
+ConnParams = namedtuple('ConnParams', ['chain', 'password'])
 
 
 @click.group()
 @click.option('-c', '--chain', default='bitcoin-main', type=click.Choice(CHAINS),
                 help='Define the chain we\'re on out of a list (default = \'bitcoin-main\').')
+@click.option('-p', '--password', default=None, 
+                help='Key to unlock the private keys.')
 @click.option('-v', '--verbose', count=True,
               help='Print more information, may be used multiple times.')
 @click.version_option()
 @click.pass_context
-def cli(ctx, verbose, chain):
+def cli(ctx, verbose, chain, password):
     """Crypto SSM Command-Line Interface
     """
 
@@ -45,7 +47,7 @@ def cli(ctx, verbose, chain):
 
     logging.info(f"Working on {chain}")
     
-    ctx.obj = ConnParams(chain)
+    ctx.obj = ConnParams(chain, password)
 
 
 @cli.command(short_help='Generate a new seed and master key for the chain')
