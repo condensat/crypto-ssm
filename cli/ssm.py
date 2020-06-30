@@ -159,3 +159,14 @@ def generate_new_hd_wallet(chain, entropy, is_bytes):
         mnemonic = generate_mnemonic_from_entropy(generate_entropy_from_password(entropy)[:32])
     
     return generate_masterkey_from_mnemonic(mnemonic, chain)
+
+def get_xpub(chain, fingerprint):
+    dir = path.join(KEYS_DIR, chain)
+    check_dir(dir)
+    filename = path.join(dir, fingerprint)
+    master_key_bin = retrieve_from_disk(filename)
+    masterkey = wally.bip32_key_unserialize(master_key_bin)
+    # strip the xpriv to keep only the xpub
+    # xpub = wally.bip32_key_strip_private_key(masterkey)
+    # now return the xpub in its base58 readable format
+    return wally.bip32_key_to_base58(masterkey, BIP32_FLAG_KEY_PUBLIC)
