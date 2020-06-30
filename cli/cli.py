@@ -54,7 +54,7 @@ def cli(ctx, verbose, chain, password):
 @cli.command(short_help='Generate a new seed and master key for the chain')
 @click.option('-e', '--entropy', required=True,
                 help='Either a password or some entropy to use for seed generation.')
-@click.option('-b', 'isbytes', is_flag=True,
+@click.option('--isbytes/--notbytes', default=False,
                 help='If set, entropy is to be treated as an hex byte string rather than a password.')
 @click.pass_obj
 def new_master(obj, entropy, isbytes):
