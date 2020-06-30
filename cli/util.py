@@ -19,6 +19,18 @@ CHAINS = [
     'elements-regtest',
 ]
 
+CA_PREFIXES = {
+    'liquidv1': 'lq',
+    'elements-regtest': 'el'
+}
+
+PREFIXES = { 
+    'bitcoin-main': 'bc', 
+    'bitcoin-test': 'tb', 
+    'bitcoin-regtest': 'bcrt',
+    'liquidv1': 'ex',
+    'elements-regtest': 'ert',
+}
 
 def btc2sat(btc):
     return round(btc * 10**8)
