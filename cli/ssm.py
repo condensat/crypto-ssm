@@ -52,6 +52,7 @@ def generate_mnemonic_from_entropy(entropy):
                                                 "It must be 16 or 32 bytes.")
     mnemonic = wally.bip39_mnemonic_from_bytes(None, entropy) # 1st argument is language, default is english
     logging.info(f"mnemonic generated from entropy.")
+    logging.debug(f"Mnenonic is {' '.join(mnemonic)}")
     return mnemonic
 
 def generate_masterkey_from_mnemonic(mnemonic, chain):
