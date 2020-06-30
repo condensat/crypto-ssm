@@ -1,5 +1,5 @@
 from cli.rpc import RawProxy, JSONRPCError
-from cli.exceptions import LiquidSwapError
+from cli.exceptions import SsmError
 
 
 LIQUID_REGTEST_RPC_PORT = 7040
