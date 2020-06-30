@@ -116,10 +116,7 @@ def get_address_from_path(chain, fingerprint, derivation_path, hardened=True):
     filename = path.join(dir, fingerprint)
     master_key_bin = retrieve_from_disk(filename)
     masterkey = wally.bip32_key_unserialize(master_key_bin)
-    print("masterkey type is ", type(masterkey))
     lpath = parse_path(derivation_path)
-    print("not hardened path is ", lpath)
-    print("hardened path is ", harden_path(lpath))
     if hardened == False:
         child = wally.bip32_key_from_parent_path(masterkey, lpath, wally.BIP32_FLAG_KEY_PRIVATE)
     else:
