@@ -109,7 +109,7 @@ def new_address(obj, fingerprint, path, hardened):
 @click.option('-f', '--fingerprint', required=True,
                 help='A 4B fingerprint that identifies the master key.')
 @click.pass_obj
-def get-xpub(obj, fingerprint):
+def get_xpub(obj, fingerprint):
     """Get extended public key for a said chain and masterkey.
     Each masterkey is identified through its fingerprint that have been returned when it was created.
     Return value is the xpub that allows to derive all the public keys and address without knowledge
