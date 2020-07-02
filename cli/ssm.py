@@ -62,17 +62,11 @@ def generate_master_blinding_key_from_seed(seed, chain, fingerprint):
     master_blinding_key = wally.asset_blinding_key_from_seed(seed) # SLIP-077 derivation
 
     # Save the blinding key to disk in a separate dir
-    dir = path.join(KEYS_DIR, BLINDING_KEYS_DIR)
-    check_dir(dir)
-    filename = path.join(dir, fingerprint)
-    save_to_disk(master_blinding_key, filename)
+    save_masterkey_to_disk(chain, master_blinding_key, fingerprint, True)
 
 def get_blinding_key_from_address(address, chain, fingerprint):
     # First retrieve the master blinding key from disk
-    dir = path.join(KEYS_DIR, BLINDING_KEYS_DIR)
-    check_dir(dir)
-    filename = path.join(dir, fingerprint)
-    master_key = retrieve_from_disk(filename)
+    master_key = get_masterkey_from_disk(chain, fingerprint, True)
     # Next we compute the blinding keys for the address
     script_pubkey = wally.addr_segwit_to_bytes(address, PREFIXES.get(chain), 0)
     private_blinding_key = wally.asset_blinding_key_to_ec_private_key(master_key, script_pubkey)
@@ -92,16 +86,13 @@ def generate_masterkey_from_mnemonic(mnemonic, chain):
     wally.bip39_mnemonic_to_seed(mnemonic, None, seed)
 
     # Now let's derivate the master privkey from seed
-    master_key_private = wally.bip32_key_from_seed(seed, version, 0)
+    master_key = wally.bip32_key_from_seed(seed, version, 0)
     fingerprint = bytearray(4)
-    wally.bip32_key_get_fingerprint(master_key_private, fingerprint)
+    wally.bip32_key_get_fingerprint(master_key, fingerprint)
 
     # dump the hdkey to disk. Create a dir for each chain, filename is key fingerprint
-    master_key_bin = wally.bip32_key_serialize(master_key_private, wally.BIP32_FLAG_KEY_PRIVATE)
-    dir = path.join(KEYS_DIR, chain)
-    check_dir(dir)
-    filename = path.join(dir, str(bin_to_hex(fingerprint)))
-    save_to_disk(master_key_bin, filename)
+    master_key_bin = wally.bip32_key_serialize(master_key, wally.BIP32_FLAG_KEY_PRIVATE)
+    save_masterkey_to_disk(chain, master_key_bin, str(fingerprint.hex()))
 
     # If chain is Elements, we can also derive the blinding key from the same seed
     if chain in ['liquidv1', 'elements-regtest']:
@@ -167,18 +158,12 @@ def generate_new_hd_wallet(chain, entropy, is_bytes):
 
     if salt:
         # We now save the salt in a file under the fingerprint name
-        dir = path.join(KEYS_DIR, 'salts')
-        check_dir(dir)
-        filename = path.join(dir, fingerprint)
-        save_to_disk(salt, filename)
+        save_salt_to_disk(fingerprint, salt)
 
     return fingerprint
 
 def get_xpub(chain, fingerprint):
-    dir = path.join(KEYS_DIR, chain)
-    check_dir(dir)
-    filename = path.join(dir, fingerprint)
-    master_key_bin = retrieve_from_disk(filename)
+    master_key_bin = get_masterkey_from_disk(chain, fingerprint)
     masterkey = wally.bip32_key_unserialize(master_key_bin)
     # now return the xpub in its base58 readable format
     return wally.bip32_key_to_base58(masterkey, wally.BIP32_FLAG_KEY_PUBLIC)
