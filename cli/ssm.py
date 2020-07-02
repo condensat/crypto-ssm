@@ -119,6 +119,10 @@ def get_child_from_path(chain, fingerprint, derivation_path, hardened=True):
     else:
         return wally.bip32_key_from_parent_path(masterkey, harden_path(lpath), wally.BIP32_FLAG_KEY_PRIVATE)
 
+
+def get_address_from_path(chain, fingerprint, derivation_path, hardened=True):
+    # get the child extended key
+    child = get_child_from_path(chain, fingerprint, derivation_path, hardened)
     # get a new segwit native address from the child
     address = wally.bip32_key_to_addr_segwit(child, PREFIXES.get(chain), 0)
 
