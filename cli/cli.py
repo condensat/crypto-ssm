@@ -123,3 +123,25 @@ def get_xpub(obj, fingerprint):
     logging.debug(f"{obj.chain} xpub is {xpub}")
 
     click.echo(encode_payload(xpub))
+
+@cli.command(short_help='Sign all or some inputs of a serialized transaction.')
+@click.argument('transaction')
+@click.argument('fingerprints')
+@click.argument('paths')
+@click.pass_obj
+def sign_tx(obj, transaction, fingerprints, paths):
+    """Take an unsigned, complete transaction, and return it signed and ready for broadcast.
+    For each fingerprint, we need one path, but a fingerprint can be repeated as many time as necessary.
+    SSM will take the fingerprint and the paths in the provided order, derivate the private key and try
+    to sign the outputs in the same order.
+    If number of fingerprints/paths is less than number of inputs, it will sign all that it can and return the tx as it is.
+    Fingerprints and paths must be space separated in a single string. 
+    """
+
+    #logging.info(f"Signing tx {get_txid(transaction)} for {obj.chain}.")
+
+    signed_tx = ssm.sign_tx(obj.chain, transaction, fingerprints, paths)
+
+    logging.debug(f"signed tx is {signed_tx}")
+
+    click.echo(encode_payload(signed_tx))
