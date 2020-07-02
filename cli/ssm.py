@@ -167,3 +167,44 @@ def get_xpub(chain, fingerprint):
     masterkey = wally.bip32_key_unserialize(master_key_bin)
     # now return the xpub in its base58 readable format
     return wally.bip32_key_to_base58(masterkey, wally.BIP32_FLAG_KEY_PUBLIC)
+
+def sign_tx(chain, tx, fingerprints, paths, hardened=True):
+    # first extract the fingerprints and paths in lists
+    fingerprints = fingerprints.split()
+    paths = paths.split()
+    # Check if we have the same number of fingerprints and paths
+    try:
+        assert len(fingerprints) == len(paths)
+    except:
+        raise exceptions.MissingValueError("As many fingerprints as paths must be provided.")
+
+    # Get a tx object from the tx_hex
+    if chain in ['bitcoin-main', 'bitcoin-test', 'bitcoin-regtest']: 
+        Tx = wally.tx_from_hex(tx, wally.WALLY_TX_FLAG_USE_WITNESS) 
+    else: 
+        Tx = wally.tx_from_hex(tx, wally.WALLY_TX_FLAG_USE_WITNESS | wally.WALLY_TX_FLAG_USE_ELEMENTS)
+           
+    print(f"fingerprints is {fingerprints}")
+    print(f"paths is {paths}")
+    # Now we loop on each fingerprint provided, compute the sighash and sign the same index input
+    for i, f in enumerate(fingerprints):
+        child = get_child_from_path(chain, fingerprints[i], paths[i], hardened)
+        privkey = wally.bip32_key_get_priv_key(child)
+        pubkey = wally.ec_public_key_from_private_key(privkey)
+        hashToSign = wally.tx_get_elements_signature_hash(Tx, i, 
+            bytearray([0x0, 0x14]) + wally.hash160(pubkey), 
+            wally.tx_get_output_value(Tx, 0), 
+            wally.WALLY_SIGHASH_ALL, 
+            wally.WALLY_TX_FLAG_USE_WITNESS)
+        sig = wally.ec_sig_from_bytes(privkey, hashToSign, wally.EC_FLAG_ECDSA | wally.EC_FLAG_GRIND_R)
+        sig = wally.ec_sig_to_der(sig) + bytearray([wally.WALLY_SIGHASH_ALL])
+        witnessStack = wally.tx_witness_stack_init(2)
+        wally.tx_witness_stack_add(witnessStack, sig)
+        wally.tx_witness_stack_add(witnessStack, pubkey)
+        wally.tx_set_input_witness(Tx, i, witnessStack)
+
+    # Now return the hex of the signed tx
+    if chain in ['bitcoin-main', 'bitcoin-test', 'bitcoin-regtest']: 
+        return wally.tx_to_hex(Tx, wally.WALLY_TX_FLAG_USE_WITNESS) 
+    else: 
+        return wally.tx_to_hex(Tx, wally.WALLY_TX_FLAG_USE_WITNESS & wally.WALLY_TX_FLAG_USE_ELEMENTS)
