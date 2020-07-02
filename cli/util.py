@@ -1,6 +1,7 @@
 import logging, json
 from binascii import hexlify, unhexlify
 from os import path, mkdir
+from wallycore import sha256d
 
 from cli.exceptions import (
     UnexpectedValueError,
@@ -31,6 +32,9 @@ PREFIXES = {
     'liquidv1': 'ex',
     'elements-regtest': 'ert',
 }
+
+KEYS_DIR = "/ssm-keys"
+BLINDING_KEYS_DIR = "blinding_keys"
 
 def btc2sat(btc):
     return round(btc * 10**8)
@@ -141,3 +145,31 @@ def encode_payload(data):
     data_hex = data_bytes.hex()
 
     return data_hex
+
+def get_txid(tx):
+    "Return the double sha256 hash of the tx"
+    return sha256d(tx)
+
+def get_masterkey_from_disk(chain, fingerprint, blindingkey=False):
+    if blindingkey:
+        dir = path.join(KEYS_DIR, BLINDING_KEYS_DIR)
+    else:
+        dir = path.join(KEYS_DIR, chain)
+    check_dir(dir)
+    filename = path.join(dir, fingerprint)
+    return retrieve_from_disk(filename)
+
+def save_masterkey_to_disk(chain, masterkey, fingerprint, blindingkey=False):
+    if blindingkey:
+        dir = path.join(KEYS_DIR, BLINDING_KEYS_DIR)
+    else:
+        dir = path.join(KEYS_DIR, chain)
+    check_dir(dir)
+    filename = path.join(dir, fingerprint)
+    save_to_disk(masterkey, filename)
+
+def save_salt_to_disk(fingerprint, salt):
+    dir = path.join(KEYS_DIR, 'salt')
+    check_dir(dir)
+    filename = path.join(dir, fingerprint)
+    save_to_disk(salt, filename)
