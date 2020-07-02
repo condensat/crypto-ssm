@@ -75,7 +75,7 @@ def new_master(obj, entropy, isbytes):
 @cli.command(short_help='Generate a new address for chain and master key')
 @click.option('-f', '--fingerprint', required=True,
                 help='A 4B fingerprint that identifies the master key.')
-@click.option('-p', '--path',
+@click.option('-p', '--path', required=True,
                 help='The path of the address to derivate.')
 @click.option('--hardened/--not-hardened', default=True,
                 help='If the address must be derived using hardened path.')
