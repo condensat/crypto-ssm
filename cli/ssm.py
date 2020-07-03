@@ -100,7 +100,7 @@ def generate_masterkey_from_mnemonic(mnemonic, chain, passphrase=None, dir=KEYS_
 
     # If chain is Elements, we can also derive the blinding key from the same seed
     if chain in ['liquidv1', 'elements-regtest']:
-        generate_master_blinding_key_from_seed(seed, chain, str(fingerprint.hex()))
+        generate_master_blinding_key_from_seed(seed, chain, str(fingerprint.hex()), dir)
 
     # We return the fingerprint only to the caller and keep the keys here
     return str(bin_to_hex(fingerprint))
