@@ -1,7 +1,12 @@
 import logging, json
 from binascii import hexlify, unhexlify
 from os import path, mkdir
-from wallycore import sha256d
+from wallycore import (
+    sha256d,
+    bip32_key_to_base58,
+    BIP32_FLAG_KEY_PRIVATE,
+    BIP32_FLAG_KEY_PUBLIC
+)
 
 from cli.exceptions import (
     UnexpectedValueError,
@@ -51,6 +56,8 @@ def values2btc(m):
 def sort_dict(d):
     return {k: v for k, v in sorted(d.items())}
 
+def hdkey_to_base58(hdkey, private=True):
+    return bip32_key_to_base58(hdkey, BIP32_FLAG_KEY_PRIVATE if private == True else BIP32_FLAG_KEY_PUBLIC)
 
 def is_mine(address, connection):
     if not connection.validateaddress(address)['isvalid']:
