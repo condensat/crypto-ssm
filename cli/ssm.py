@@ -87,8 +87,8 @@ def generate_masterkey_from_mnemonic(mnemonic, chain, passphrase=None, dir=KEYS_
     else:
         version = wally.BIP32_VER_TEST_PRIVATE
     
-    # first get the seed from the mnemonic. We don't allow using a passphrase for now
-    seed = generate_seed_from_mnemonic(mnemonic)
+    # first get the seed from the mnemonic.
+    seed = generate_seed_from_mnemonic(mnemonic, passphrase)
 
     # Now let's derivate the master privkey from seed
     masterkey = wally.bip32_key_from_seed(seed, version, 0)
