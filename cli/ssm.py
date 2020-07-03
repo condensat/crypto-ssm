@@ -79,7 +79,7 @@ def get_blinding_key_from_address(address, chain, fingerprint):
 
     return private_blinding_key
 
-def generate_masterkey_from_mnemonic(mnemonic, chain):
+def generate_masterkey_from_mnemonic(mnemonic, chain, passphrase=None):
     """Generate a masterkey pair + a master blinding key if chain is Elements.
     """
     if chain in ['bitcoin-main', 'liquidv1']:
