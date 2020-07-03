@@ -106,8 +106,7 @@ def generate_masterkey_from_mnemonic(mnemonic, chain, passphrase=None, dir=KEYS_
     return str(bin_to_hex(fingerprint))
 
 def get_child_from_path(chain, fingerprint, derivation_path, hardened=True):
-    master_key_bin = get_masterkey_from_disk(chain, fingerprint)
-    masterkey = wally.bip32_key_unserialize(master_key_bin)
+    masterkey = get_masterkey_from_disk(chain, fingerprint)
     lpath = parse_path(derivation_path)
     if hardened == False:
         return wally.bip32_key_from_parent_path(masterkey, lpath, wally.BIP32_FLAG_KEY_PRIVATE)
