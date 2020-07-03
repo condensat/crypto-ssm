@@ -1,8 +1,6 @@
 import logging, json
 from binascii import hexlify, unhexlify
 from os import path, mkdir
-from ctypes import c_uint32
-
 from wallycore import (
     sha256d,
     bip32_key_unserialize,
