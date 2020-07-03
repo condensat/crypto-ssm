@@ -63,7 +63,7 @@ def generate_master_blinding_key_from_seed(seed, chain, fingerprint, dir=KEYS_DI
     master_blinding_key = wally.asset_blinding_key_from_seed(seed) # SLIP-077 derivation
 
     # Save the blinding key to disk in a separate dir
-    save_masterkey_to_disk(chain, master_blinding_key, fingerprint, True)
+    save_masterkey_to_disk(chain, master_blinding_key, fingerprint, True, dir)
 
 def generate_seed_from_mnemonic(mnemonic, passphrase=None):
     seed = bytearray(64) # seed is 64 bytes
@@ -96,8 +96,7 @@ def generate_masterkey_from_mnemonic(mnemonic, chain, passphrase=None, dir=KEYS_
     wally.bip32_key_get_fingerprint(master_key, fingerprint)
 
     # dump the hdkey to disk. Create a dir for each chain, filename is key fingerprint
-    master_key_bin = wally.bip32_key_serialize(master_key, wally.BIP32_FLAG_KEY_PRIVATE)
-    save_masterkey_to_disk(chain, master_key_bin, str(fingerprint.hex()))
+    save_masterkey_to_disk(chain, masterkey, str(fingerprint.hex()), False, dir)
 
     # If chain is Elements, we can also derive the blinding key from the same seed
     if chain in ['liquidv1', 'elements-regtest']:
