@@ -1,8 +1,12 @@
 import logging, json
 from binascii import hexlify, unhexlify
 from os import path, mkdir
+from ctypes import c_uint32
+
 from wallycore import (
     sha256d,
+    bip32_key_unserialize,
+    bip32_key_serialize,
     bip32_key_to_base58,
     BIP32_FLAG_KEY_PRIVATE,
     BIP32_FLAG_KEY_PUBLIC
@@ -157,23 +161,31 @@ def get_txid(tx):
     "Return the double sha256 hash of the tx"
     return sha256d(tx)
 
-def get_masterkey_from_disk(chain, fingerprint, blindingkey=False):
+def get_masterkey_from_disk(chain, fingerprint, blindingkey=False, dir=KEYS_DIR):
     if blindingkey:
-        dir = path.join(KEYS_DIR, BLINDING_KEYS_DIR)
+        dir = path.join(dir, BLINDING_KEYS_DIR)
     else:
-        dir = path.join(KEYS_DIR, chain)
+        dir = path.join(dir, chain)
     check_dir(dir)
     filename = path.join(dir, fingerprint)
-    return retrieve_from_disk(filename)
+    masterkey_bin = retrieve_from_disk(filename)
+    if blindingkey:
+        return masterkey_bin
+    else:
+        return bip32_key_unserialize(masterkey_bin)
 
-def save_masterkey_to_disk(chain, masterkey, fingerprint, blindingkey=False):
+def save_masterkey_to_disk(chain, masterkey, fingerprint, blindingkey=False, dir=KEYS_DIR):
     if blindingkey:
-        dir = path.join(KEYS_DIR, BLINDING_KEYS_DIR)
+        dir = path.join(dir, BLINDING_KEYS_DIR)
+        masterkey_bin = masterkey
     else:
-        dir = path.join(KEYS_DIR, chain)
+        dir = path.join(dir, chain)
+        masterkey_bin = bip32_key_serialize(masterkey, BIP32_FLAG_KEY_PRIVATE)
     check_dir(dir)
+    # TODO: check that a file with the same fingerprint doesn't exist. 
+    # The probability to have a collision on a fingerprint is small, but still
     filename = path.join(dir, fingerprint)
-    save_to_disk(masterkey, filename)
+    save_to_disk(masterkey_bin, filename)
 
 def save_salt_to_disk(fingerprint, salt):
     dir = path.join(KEYS_DIR, 'salt')
