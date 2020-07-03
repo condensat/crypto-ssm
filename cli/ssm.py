@@ -14,7 +14,8 @@ from cli.util import (
     harden_path,
     bin_to_hex,
     check_dir,
-    parse_path
+    parse_path,
+    hdkey_to_base58
 )
 
 SALT_LEN = 32
@@ -170,7 +171,7 @@ def get_xpub(chain, fingerprint):
     master_key_bin = get_masterkey_from_disk(chain, fingerprint)
     masterkey = wally.bip32_key_unserialize(master_key_bin)
     # now return the xpub in its base58 readable format
-    return wally.bip32_key_to_base58(masterkey, wally.BIP32_FLAG_KEY_PUBLIC)
+    return hdkey_to_base58(masterkey, False)
 
 def sign_tx(chain, tx, fingerprints, paths, hardened=True):
     # first extract the fingerprints and paths in lists
