@@ -64,6 +64,11 @@ def generate_master_blinding_key_from_seed(seed, chain, fingerprint):
     # Save the blinding key to disk in a separate dir
     save_masterkey_to_disk(chain, master_blinding_key, fingerprint, True)
 
+def generate_seed_from_mnemonic(mnemonic, passphrase=None):
+    seed = bytearray(64) # seed is 64 bytes
+    wally.bip39_mnemonic_to_seed(mnemonic, passphrase, seed)
+    return seed
+
 def get_blinding_key_from_address(address, chain, fingerprint):
     # First retrieve the master blinding key from disk
     master_key = get_masterkey_from_disk(chain, fingerprint, True)
@@ -82,8 +87,7 @@ def generate_masterkey_from_mnemonic(mnemonic, chain):
         version = wally.BIP32_VER_TEST_PRIVATE
     
     # first get the seed from the mnemonic. We don't allow using a passphrase for now
-    seed = bytearray(64) # seed is 64 bytes
-    wally.bip39_mnemonic_to_seed(mnemonic, None, seed)
+    seed = generate_seed_from_mnemonic(mnemonic)
 
     # Now let's derivate the master privkey from seed
     master_key = wally.bip32_key_from_seed(seed, version, 0)
