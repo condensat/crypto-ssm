@@ -56,7 +56,7 @@ def generate_mnemonic_from_entropy(entropy):
     logging.debug(f"Mnenonic is {' '.join(mnemonic)}")
     return mnemonic
 
-def generate_master_blinding_key_from_seed(seed, chain, fingerprint):
+def generate_master_blinding_key_from_seed(seed, chain, fingerprint, dir=KEYS_DIR):
     """Generate the master blinding key from the seed, and save it to disk
     """
     master_blinding_key = bytearray(64)
@@ -79,7 +79,7 @@ def get_blinding_key_from_address(address, chain, fingerprint):
 
     return private_blinding_key
 
-def generate_masterkey_from_mnemonic(mnemonic, chain, passphrase=None):
+def generate_masterkey_from_mnemonic(mnemonic, chain, passphrase=None, dir=KEYS_DIR):
     """Generate a masterkey pair + a master blinding key if chain is Elements.
     """
     if chain in ['bitcoin-main', 'liquidv1']:
