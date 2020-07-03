@@ -115,12 +115,13 @@ def get_xpub(obj, fingerprint):
     Return value is the xpub that allows to derive all the public keys and address without knowledge
     of any private key.
     """
+    #TODO: maybe we could take a path and return a derived xpub? Do we have a use case for that?
 
     logging.info(f"Getting the xpub for {obj.chain} and master key {fingerprint}.")
 
     xpub = ssm.get_xpub(obj.chain, fingerprint)
 
-    logging.debug(f"{obj.chain} xpub is {xpub}")
+    logging.debug(f"{obj.chain} {fingerprint} masterkey's xpub is {xpub}")
 
     click.echo(encode_payload(xpub))
 
