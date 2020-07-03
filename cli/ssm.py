@@ -72,10 +72,10 @@ def generate_seed_from_mnemonic(mnemonic, passphrase=None):
 
 def get_blinding_key_from_address(address, chain, fingerprint):
     # First retrieve the master blinding key from disk
-    master_key = get_masterkey_from_disk(chain, fingerprint, True)
+    masterkey = get_masterkey_from_disk(chain, fingerprint, True)
     # Next we compute the blinding keys for the address
     script_pubkey = wally.addr_segwit_to_bytes(address, PREFIXES.get(chain), 0)
-    private_blinding_key = wally.asset_blinding_key_to_ec_private_key(master_key, script_pubkey)
+    private_blinding_key = wally.asset_blinding_key_to_ec_private_key(masterkey, script_pubkey)
 
     return private_blinding_key
 
@@ -91,9 +91,9 @@ def generate_masterkey_from_mnemonic(mnemonic, chain, passphrase=None, dir=KEYS_
     seed = generate_seed_from_mnemonic(mnemonic)
 
     # Now let's derivate the master privkey from seed
-    master_key = wally.bip32_key_from_seed(seed, version, 0)
+    masterkey = wally.bip32_key_from_seed(seed, version, 0)
     fingerprint = bytearray(4)
-    wally.bip32_key_get_fingerprint(master_key, fingerprint)
+    wally.bip32_key_get_fingerprint(masterkey, fingerprint)
 
     # dump the hdkey to disk. Create a dir for each chain, filename is key fingerprint
     save_masterkey_to_disk(chain, masterkey, str(fingerprint.hex()), False, dir)
