@@ -26,7 +26,7 @@ RUN [ "python3.6m", "-m", "pip", "install", "-r", "/demo/requirements.txt" ]
 
 COPY cli/ /crypto-ssm/cli
 
-#COPY src/ /cli/src
+COPY test/ /crypto-ssm/test
 
 COPY setup.py /crypto-ssm
 
