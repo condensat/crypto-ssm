@@ -49,30 +49,26 @@ def bip39_test_vectors():
     with open(BIP39_VECTORS) as f:
         return json.load(f)
 
-@pytest.fixture
-def fingerprints_list():
-    with open(BIP39_VECTORS) as f:
-        data = json.load(f)
-    
-    fingerprints = []
-    for k, v in data.items():
-        masterkey = bip32_key_from_base58(v[2])
-        fingerprint = bytearray(4)
-        bip32_key_get_fingerprint(masterkey, fingerprint)
-        fingerprints.append(str(fingerprint.hex()))
-    return fingerprints
-
-def test_bip39_from_entropy_to_hdkey(bip39_test_vectors, fingerprints_list, tmpdir):
-    keys_dir = tmpdir.mkdir("ssm_keys")
-    xpriv = []
+def test_bip39_entropy_to_mnemonic(bip39_test_vectors):
     for k, v in bip39_test_vectors.items():
         mnemomic = generate_mnemonic_from_entropy(bytes.fromhex(k))
-        seed = generate_seed_from_mnemonic(mnemomic, PASSPHRASE)
-        generate_masterkey_from_mnemonic(mnemomic, CHAIN, PASSPHRASE, keys_dir)
-        xpriv.append(v[2])
         assert mnemomic == v[0]
+
+def test_bip39_mnemonic_to_seed(bip39_test_vectors):
+    for k, v in bip39_test_vectors.items():
+        seed = generate_seed_from_mnemonic(v[0], PASSPHRASE)
         assert seed.hex() == v[1]
 
-    for i in range(0, len(fingerprints_list)):
-        masterkey = get_masterkey_from_disk(CHAIN, fingerprints_list[i], False, keys_dir)
-        assert hdkey_to_base58(masterkey) == xpriv[i]
+def test_bip39_seed_to_hdkey(bip39_test_vectors, tmpdir):
+    keys_dir = tmpdir.mkdir("ssm_keys")
+    fingerprints = []
+    xpriv = []
+    for k, v in bip39_test_vectors.items():
+        fingerprint = generate_masterkey_from_mnemonic(v[0], CHAIN, PASSPHRASE, keys_dir)
+        xpriv.append(v[2])
+        fingerprints.append(fingerprint)
+
+    for i in range(0, len(fingerprints)):
+        hdkey = get_masterkey_from_disk(CHAIN, fingerprints[i], False, keys_dir)
+        assert hdkey_to_base58(hdkey) == xpriv[i]
+        
