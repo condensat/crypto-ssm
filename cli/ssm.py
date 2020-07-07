@@ -11,7 +11,7 @@ from cli.util import (
     save_masterkey_to_disk,
     save_salt_to_disk,
     get_masterkey_from_disk,
-    harden_path,
+    harden,
     bin_to_hex,
     check_dir,
     parse_path,
