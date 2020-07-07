@@ -105,8 +105,7 @@ def generate_masterkey_from_mnemonic(mnemonic, chain, passphrase=None, dir=KEYS_
     # We return the fingerprint only to the caller and keep the keys here
     return str(bin_to_hex(fingerprint))
 
-def get_child_from_path(chain, fingerprint, derivation_path, hardened=True):
-    masterkey = get_masterkey_from_disk(chain, fingerprint)
+def get_child_from_path(chain, fingerprint, derivation_path, dir=KEYS_DIR):
     lpath = parse_path(derivation_path)
     if hardened == False:
         return wally.bip32_key_from_parent_path(masterkey, lpath, wally.BIP32_FLAG_KEY_PRIVATE)
@@ -114,9 +113,9 @@ def get_child_from_path(chain, fingerprint, derivation_path, hardened=True):
         return wally.bip32_key_from_parent_path(masterkey, harden_path(lpath), wally.BIP32_FLAG_KEY_PRIVATE)
 
 
-def get_address_from_path(chain, fingerprint, derivation_path, hardened=True):
+def get_address_from_path(chain, fingerprint, derivation_path, dir=KEYS_DIR):
     # get the child extended key
-    child = get_child_from_path(chain, fingerprint, derivation_path, hardened)
+    child = get_child_from_path(chain, fingerprint, derivation_path, dir)
     # get a new segwit native address from the child
     address = wally.bip32_key_to_addr_segwit(child, PREFIXES.get(chain), 0)
 
