@@ -7,7 +7,7 @@ from wallycore import (
     bip32_key_serialize,
     bip32_key_to_base58,
     BIP32_FLAG_KEY_PRIVATE,
-    BIP32_FLAG_KEY_PUBLIC
+    BIP32_FLAG_KEY_PUBLIC,
 )
 
 from cli.exceptions import (
@@ -42,6 +42,8 @@ PREFIXES = {
 
 KEYS_DIR = "/ssm-keys"
 BLINDING_KEYS_DIR = "blinding_keys"
+
+INITIAL_HARDENED_INDEX = pow(2, 31)
 
 def btc2sat(btc):
     return round(btc * 10**8)
@@ -109,13 +111,21 @@ def set_logging(verbose):
     elif verbose > 1:
         logging.root.setLevel(logging.DEBUG)
 
-def harden_path(path):
-    hardened = []
-    for index in path:
-        if index >= pow(2, 31):
+def harden(idx):
+    if idx[-1] is '\'' or idx[-1] is 'h':
+        try:
+            int(idx[:-1])
+        except ValueError as e:
+            print(e.args)
+        idx = idx[:-1]
+        if int(idx) >= INITIAL_HARDENED_INDEX:
             raise UnexpectedValueError("Can't harden an index greater than 2^31 - 1")
-        hardened.append(index + pow(2, 31))
-    return hardened
+        return int(idx) + INITIAL_HARDENED_INDEX
+    else:
+        try:
+            return int(idx)
+        except ValueError as e:
+            print(e.args)
 
 def save_to_disk(data, file):
     with open(file, 'wb') as f:
@@ -143,9 +153,9 @@ def parse_path(path):
     if path.find('/') >= 0:
         strpath = path.split('/')
         for idx in strpath:
-            lpath.append(int(idx))
+            lpath.append(harden(idx))
     else:
-        lpath.append(int(path))
+        lpath.append(harden(path))
     return lpath
 
 def encode_payload(data):
