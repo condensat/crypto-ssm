@@ -173,7 +173,7 @@ def get_xpub(chain, fingerprint):
     # now return the xpub in its base58 readable format
     return hdkey_to_base58(masterkey, False)
 
-def sign_tx(chain, tx, fingerprints, paths, hardened=True):
+def sign_tx(chain, tx, fingerprints, paths):
     # first extract the fingerprints and paths in lists
     fingerprints = fingerprints.split()
     paths = paths.split()
@@ -193,7 +193,7 @@ def sign_tx(chain, tx, fingerprints, paths, hardened=True):
     print(f"paths is {paths}")
     # Now we loop on each fingerprint provided, compute the sighash and sign the same index input
     for i, f in enumerate(fingerprints):
-        child = get_child_from_path(chain, fingerprints[i], paths[i], hardened)
+        child = get_child_from_path(chain, fingerprints[i], paths[i])
         privkey = wally.bip32_key_get_priv_key(child)
         pubkey = wally.ec_public_key_from_private_key(privkey)
         hashToSign = wally.tx_get_elements_signature_hash(Tx, i, 
