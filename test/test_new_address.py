@@ -54,7 +54,7 @@ def paths():
         '0h/1/2h/2', 
         '0h/1/2h/2/1000000000'
     ]
-    paths['xprv9s21ZrQH143K25QhxbucbDDuQ4naNntJRi4KUfWT7xo4EKsHt2QJDu7KXp1A3u7Bi1j8ph3EGsZ9Xvz9dGuVrtHHs7pXeTzjuxBrCmmhgC6'] = [
+    paths['xprv9s21ZrQH143K31xYSDQpPDxsXRTUcvj2iNHm5NUtrGiGG5e2DtALGdso3pGz6ssrdK4PFmM8NSpSBHNqPqm55Qn3LqFtT2emdEXVYsCzC2U'] = [
         '0', 
         '0/2147483647h', 
         '0/2147483647h/1', 
@@ -94,3 +94,5 @@ def test_bip32_hdkey_derivation(bip32_test_vectors, paths, tmpdir):
             child = get_child_from_path(CHAIN, fingerprints[k], path, keys_dir)
             test_child = childs.pop(0)
             assert bip32_key_to_base58(child, BIP32_FLAG_KEY_PRIVATE) == test_child
+
+# TODO: test the extended pubkey and bech32 address derivation 
