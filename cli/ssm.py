@@ -190,7 +190,11 @@ def get_xpub(chain, fingerprint):
     # now return the xpub in its base58 readable format
     return hdkey_to_base58(masterkey, False)
 
-def sign_tx(chain, tx, fingerprints, paths):
+def get_xprv(chain, fingerprint):
+    masterkey = get_masterkey_from_disk(chain, fingerprint)
+    # now return the xprv in its base58 readable format
+    return hdkey_to_base58(masterkey, True)
+
     # first extract the fingerprints and paths in lists
     fingerprints = fingerprints.split()
     paths = paths.split()
