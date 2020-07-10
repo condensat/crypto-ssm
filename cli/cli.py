@@ -72,6 +72,18 @@ def new_master(obj, entropy, isbytes):
 
     logging.info(f"New master key generated for {obj.chain}! Fingerprint: {fingerprint}")
 
+@cli.command(short_help='Restore masterkey from base58 xprv')
+@click.argument('hdkey')
+@click.pass_obj
+def restore_master(obj, hdkey):
+    """Save the master key provided in the ssm-keys dir.
+    For debugging purpose, don't use this in production.
+    """
+
+    fingerprint = ssm.restore_hd_wallet(obj.chain, hdkey)
+
+    click.echo(fingerprint)
+
 @cli.command(short_help='Generate a new address for chain and master key')
 @click.option('-f', '--fingerprint', required=True,
                 help='A 4B fingerprint that identifies the master key.')

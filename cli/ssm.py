@@ -167,9 +167,26 @@ def generate_new_hd_wallet(chain, entropy, is_bytes):
 
     return fingerprint
 
+def restore_hd_wallet(chain, hdkey, dir=KEYS_DIR):
+    # First make sure we know for which network we need a seed
+    try:
+        assert chain in CHAINS
+    except AssertionError:
+        raise exceptions.UnexpectedValueError("Unknown chain.")
+
+    # Check that the ssm-keys dir exists, create it if necessary
+    check_dir(KEYS_DIR)
+
+    masterkey = wally.bip32_key_from_base58(hdkey)
+
+    fingerprint = bytearray(4)
+    wally.bip32_key_get_fingerprint(masterkey, fingerprint)
+    save_masterkey_to_disk(chain, masterkey, str(fingerprint.hex()), False, dir)
+
+    return str(fingerprint.hex())
+
 def get_xpub(chain, fingerprint):
-    master_key_bin = get_masterkey_from_disk(chain, fingerprint)
-    masterkey = wally.bip32_key_unserialize(master_key_bin)
+    masterkey = get_masterkey_from_disk(chain, fingerprint)
     # now return the xpub in its base58 readable format
     return hdkey_to_base58(masterkey, False)
 
