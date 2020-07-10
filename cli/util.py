@@ -1,5 +1,6 @@
 import logging, json
 from binascii import hexlify, unhexlify
+from io import BytesIO
 from os import path, mkdir
 from wallycore import (
     sha256d,
@@ -200,3 +201,24 @@ def save_salt_to_disk(fingerprint, salt):
     check_dir(dir)
     filename = path.join(dir, fingerprint)
     save_to_disk(salt, filename)
+
+def read_varint(s):
+    '''read_varint reads a variable integer from a stream'''
+    i = s.read(1)[0]
+    if i == 0xfd:
+        # 0xfd means the next two bytes are the number
+        return int.from_bytes(s.read(2), 'little')
+    elif i == 0xfe:
+        # 0xfe means the next four bytes are the number
+        return int.from_bytes(s.read(4), 'little')
+    elif i == 0xff:
+        # 0xff means the next eight bytes are the number
+        return int.from_bytes(s.read(8), 'little')
+    else:
+        # anything else is just the integer
+        return i
+
+def get_number_inputs(tx):
+    """extract the number of inputs from the hex serialization of a tx"""
+    s.read(6)
+    return read_varint(tx)
