@@ -89,10 +89,8 @@ def restore_master(obj, hdkey):
                 help='A 4B fingerprint that identifies the master key.')
 @click.option('-p', '--path', required=True,
                 help='The path of the address to derivate.')
-@click.option('--hardened/--not-hardened', default=True,
-                help='If the address must be derived using hardened path.')
 @click.pass_obj
-def new_address(obj, fingerprint, path, hardened):
+def new_address(obj, fingerprint, path):
     """Get new address for a said chain and masterkey.
     Each masterkey is identified through its fingerprint that have been returned when it was created.
     Return value is a new segwit native address, along with other information that might be necessary
@@ -103,7 +101,7 @@ def new_address(obj, fingerprint, path, hardened):
 
     logging.info(f"Generating a new address for {obj.chain} and master key {fingerprint}.")
 
-    address, pubkey, bkey = ssm.get_address_from_path(obj.chain, fingerprint, path, hardened)
+    address, pubkey, bkey = ssm.get_address_from_path(obj.chain, fingerprint, path)
 
     return_value = {
         'address': address,
