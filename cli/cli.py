@@ -139,8 +139,10 @@ def get_xpub(obj, fingerprint):
 @click.argument('transaction')
 @click.argument('fingerprints')
 @click.argument('paths')
+@click.argument('scriptpubkeys')
+@click.argument('vout')
 @click.pass_obj
-def sign_tx(obj, transaction, fingerprints, paths):
+def sign_tx(obj, transaction, fingerprints, paths, scriptpubkeys, vout):
     """Take an unsigned, complete transaction, and return it signed and ready for broadcast.
     For each fingerprint, we need one path, but a fingerprint can be repeated as many time as necessary.
     SSM will take the fingerprint and the paths in the provided order, derivate the private key and try
@@ -151,7 +153,7 @@ def sign_tx(obj, transaction, fingerprints, paths):
 
     #logging.info(f"Signing tx {get_txid(transaction)} for {obj.chain}.")
 
-    signed_tx = ssm.sign_tx(obj.chain, transaction, fingerprints, paths)
+    signed_tx = ssm.sign_tx(obj.chain, transaction, fingerprints, paths, scriptpubkeys, vout)
 
     logging.debug(f"signed tx is {signed_tx}")
 

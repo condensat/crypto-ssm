@@ -195,14 +195,17 @@ def get_xprv(chain, fingerprint):
     # now return the xprv in its base58 readable format
     return hdkey_to_base58(masterkey, True)
 
+def sign_tx(chain, tx, fingerprints, paths, scriptpubkeys, vout_index):
     # first extract the fingerprints and paths in lists
     fingerprints = fingerprints.split()
     paths = paths.split()
-    # Check if we have the same number of fingerprints and paths
+    scriptpubkeys = scriptpubkeys.split()
+    vout_index = vout_index.split()
+    # Check if all the lists are of the same length
     try:
-        assert len(fingerprints) == len(paths)
+        assert len(fingerprints) == len(paths) == len(scriptpubkeys) == len(vout_index)
     except:
-        raise exceptions.MissingValueError("As many fingerprints as paths must be provided.")
+        raise exceptions.MissingValueError(f"""
 
     # Get a tx object from the tx_hex
     if chain in ['bitcoin-main', 'bitcoin-test', 'bitcoin-regtest']: 
