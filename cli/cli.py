@@ -74,13 +74,15 @@ def new_master(obj, entropy, isbytes):
 
 @cli.command(short_help='Restore masterkey from base58 xprv')
 @click.argument('hdkey')
+@click.option('-b', '--blindingkey', default=None,
+                help='A 64B hex encoded master blindingkey for Elements wallet.')
 @click.pass_obj
-def restore_master(obj, hdkey):
+def restore_master(obj, hdkey, blindingkey):
     """Save the master key provided in the ssm-keys dir.
     For debugging purpose, don't use this in production.
     """
 
-    fingerprint = ssm.restore_btc_hd_wallet(obj.chain, hdkey)
+    fingerprint = ssm.restore_hd_wallet(obj.chain, hdkey, blindingkey)
 
     click.echo(fingerprint)
 

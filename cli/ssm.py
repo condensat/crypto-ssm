@@ -167,16 +167,24 @@ def generate_new_hd_wallet(chain, entropy, is_bytes):
 
     return fingerprint
 
-def restore_btc_hd_wallet(chain, hdkey, dir=KEYS_DIR):
+def restore_hd_wallet(chain, hdkey, bkey=None, dir=KEYS_DIR):
     """
-    We can only restore btc wallet from hdkey because Elements would need the seed 
-    to restore the master blinding key.
+    We need to provide the master blinding key to restore elements wallet.
+    If this has not been saved separately, there's no way to retrieve it from the hdkey only.
+    Bkey must be hex encoded, and must be 64 bytes long
     """
-    # First make sure we are trying to restore a bitcoin wallet
+    # First check the chain we're on
     try:
-        assert chain in ['bitcoin-main', 'bitcoin-test', 'bitcoin-regtest']
+        assert chain in CHAINS
     except AssertionError:
-        raise exceptions.UnexpectedValueError("Only Bitcoin wallets can be restored.")
+        raise exceptions.UnexpectedValueError("Unknown chain.")
+
+    # If we are on Elements, check that the blinding key is provided
+    if chain in ['liquidv1', 'elements-regtest']:
+        try:
+            assert int(len(bkey)/2) is 64
+        except AssertionError:
+            raise exceptions.UnexpectedValueError("A 64B hex string must be provided.")
 
     # Check that the ssm-keys dir exists, create it if necessary
     check_dir(KEYS_DIR)
@@ -186,6 +194,9 @@ def restore_btc_hd_wallet(chain, hdkey, dir=KEYS_DIR):
     fingerprint = bytearray(4)
     wally.bip32_key_get_fingerprint(masterkey, fingerprint)
     save_masterkey_to_disk(chain, masterkey, str(fingerprint.hex()), False, dir)
+    # If Elements, save the provided blinding key
+    if chain in ['liquidv1', 'elements-regtest']:
+        save_masterkey_to_disk(chain, bytes.fromhex(bkey), str(fingerprint.hex()), True, dir)
 
     return str(fingerprint.hex())
 
