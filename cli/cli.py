@@ -80,7 +80,7 @@ def restore_master(obj, hdkey):
     For debugging purpose, don't use this in production.
     """
 
-    fingerprint = ssm.restore_hd_wallet(obj.chain, hdkey)
+    fingerprint = ssm.restore_btc_hd_wallet(obj.chain, hdkey)
 
     click.echo(fingerprint)
 

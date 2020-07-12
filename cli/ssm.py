@@ -167,12 +167,16 @@ def generate_new_hd_wallet(chain, entropy, is_bytes):
 
     return fingerprint
 
-def restore_hd_wallet(chain, hdkey, dir=KEYS_DIR):
-    # First make sure we know for which network we need a seed
+def restore_btc_hd_wallet(chain, hdkey, dir=KEYS_DIR):
+    """
+    We can only restore btc wallet from hdkey because Elements would need the seed 
+    to restore the master blinding key.
+    """
+    # First make sure we are trying to restore a bitcoin wallet
     try:
-        assert chain in CHAINS
+        assert chain in ['bitcoin-main', 'bitcoin-test', 'bitcoin-regtest']
     except AssertionError:
-        raise exceptions.UnexpectedValueError("Unknown chain.")
+        raise exceptions.UnexpectedValueError("Only Bitcoin wallets can be restored.")
 
     # Check that the ssm-keys dir exists, create it if necessary
     check_dir(KEYS_DIR)
