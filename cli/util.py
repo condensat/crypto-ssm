@@ -221,5 +221,9 @@ def read_varint(s):
 def get_number_inputs(tx):
     """extract the number of inputs from the hex serialization of a tx"""
     s = BytesIO(bytes.fromhex(tx))
-    s.read(6)
+    s.read(4)
+    if s.read(1) == b'\x00':
+        s.read(1)
+    else:
+        s.seek(-1, 1)
     return read_varint(s)
