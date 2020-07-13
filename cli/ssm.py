@@ -210,17 +210,23 @@ def get_xprv(chain, fingerprint):
     # now return the xprv in its base58 readable format
     return hdkey_to_base58(masterkey, True)
 
-def sign_tx(chain, tx, fingerprints, paths, scriptpubkeys, vout_index):
+def sign_tx(chain, tx, fingerprints, paths, scriptpubkeys, values, dir=KEYS_DIR):
     # first extract the fingerprints and paths in lists
     fingerprints = fingerprints.split()
     paths = paths.split()
     scriptpubkeys = scriptpubkeys.split()
-    vout_index = vout_index.split()
+    values = values.split()
     # Check if all the lists are of the same length
     try:
-        assert len(fingerprints) == len(paths) == len(scriptpubkeys) == len(vout_index)
+        assert len(fingerprints) == len(paths) == len(scriptpubkeys) == len(values)
     except:
         raise exceptions.MissingValueError(f"""
+                                            {len(fingerprints)} fingerprints, {len(paths)} 
+                                            paths, {len(scriptpubkeys)} scriptpubkeys 
+                                            and {len(values)} values provided. 
+                                            Must be the same number.
+                                            """)
+
     # Get the number of inputs
     inputs_len = get_number_inputs(tx)
 
@@ -235,11 +241,19 @@ def sign_tx(chain, tx, fingerprints, paths, scriptpubkeys, vout_index):
         child = get_child_from_path(chain, fingerprints[i], paths[i])
         privkey = wally.bip32_key_get_priv_key(child)
         pubkey = wally.ec_public_key_from_private_key(privkey)
-        hashToSign = wally.tx_get_elements_signature_hash(Tx, i, 
-            bytearray([0x0, 0x14]) + wally.hash160(pubkey), 
-            wally.tx_get_output_value(Tx, 0), 
-            wally.WALLY_SIGHASH_ALL, 
-            wally.WALLY_TX_FLAG_USE_WITNESS)
+        value = btc2sat(float(values[i]))
+        if chain in ['bitcoin-main', 'bitcoin-test', 'bitcoin-regtest']:
+            hashToSign = wally.tx_get_btc_signature_hash(Tx, i, 
+                program, 
+                value, # we need the index of the UTXO spent, or just take the value 
+                wally.WALLY_SIGHASH_ALL, 
+                wally.WALLY_TX_FLAG_USE_WITNESS)
+        else:
+            hashToSign = wally.tx_get_elements_signature_hash(Tx, i, 
+                program, 
+                value, # we need the index of the UTXO spent, or just take the value 
+                wally.WALLY_SIGHASH_ALL, 
+                wally.WALLY_TX_FLAG_USE_WITNESS)
         sig = wally.ec_sig_from_bytes(privkey, hashToSign, wally.EC_FLAG_ECDSA | wally.EC_FLAG_GRIND_R)
         sig = wally.ec_sig_to_der(sig) + bytearray([wally.WALLY_SIGHASH_ALL])
         witnessStack = wally.tx_witness_stack_init(2)
