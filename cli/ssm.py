@@ -238,7 +238,7 @@ def sign_tx(chain, tx, fingerprints, paths, scriptpubkeys, values, dir=KEYS_DIR)
            
     # Now we loop on each fingerprint provided, compute the sighash and sign the same index input
     for i in range(0, inputs_len):
-        child = get_child_from_path(chain, fingerprints[i], paths[i])
+        child = get_child_from_path(chain, fingerprints[i], paths[i], dir)
         privkey = wally.bip32_key_get_priv_key(child)
         pubkey = wally.ec_public_key_from_private_key(privkey)
         value = btc2sat(float(values[i]))
