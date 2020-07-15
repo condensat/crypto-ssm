@@ -1,23 +1,27 @@
 .DEFAULT_GOAL := build
+LIBWALLY_VERSION?=0.7.8
 
 builder:
-	docker build -f docker/ubuntu/libwally-core-builder.dockerfile . -t libwally-core-builder:0.7.7-ubuntu
+	docker build -f docker/ubuntu/libwally-core-builder.dockerfile --build-arg=LIBWALLY_CORE_VERSION=$(LIBWALLY_VERSION) . -t libwally-core-builder:${LIBWALLY_VERSION}-ubuntu
 
 libwally-core: builder
-	docker build -f docker/ubuntu/libwally-core.dockerfile . -t libwally-core:0.7.7-ubuntu
+	docker build -f docker/ubuntu/libwally-core.dockerfile --build-arg=LIBWALLY_CORE_VERSION=$(LIBWALLY_VERSION) . -t libwally-core:${LIBWALLY_VERSION}-ubuntu
 
 wallycore: builder
-	docker build -f docker/ubuntu/wallycore.dockerfile . -t wallycore:0.7.7-ubuntu
+	docker build -f docker/ubuntu/wallycore.dockerfile --build-arg=LIBWALLY_CORE_VERSION=$(LIBWALLY_VERSION) . -t wallycore:${LIBWALLY_VERSION}-ubuntu
 
-demo: wallycore
-	docker build -f docker/ubuntu/demo.dockerfile . -t demo:0.7.7-ubuntu
+crypto-ssm: wallycore
+	docker build -f docker/ubuntu/crypto-ssm.dockerfile --build-arg=LIBWALLY_CORE_VERSION=$(LIBWALLY_VERSION) . -t demo:${LIBWALLY_VERSION}-ubuntu
 
-start: demo
-	docker run -ti --rm demo:0.7.7-ubuntu
+start: crypto-ssm
+	docker run -ti --rm crypto-ssm:${LIBWALLY_VERSION}-ubuntu
+
+test: crypto-ssm
+	docker run -t --rm -w /crypto-ssm crypto-ssm:${LIBWALLY_VERSION}-ubuntu pytest
 
 build: libwally-core wallycore
 
 clean:
-	docker rmi -f wallycore:0.7.7-ubuntu libwally-core:0.7.7-ubuntu libwally-core-builder:0.7.7-ubuntu
+	docker rmi -f wallycore:${LIBWALLY_VERSION}-ubuntu libwally-core:${LIBWALLY_VERSION}-ubuntu libwally-core-builder:${LIBWALLY_VERSION}-ubuntu
 
-.PHONY: build clean start builder libwally-core wallycore
+.PHONY: build clean start builder libwally-core wallycore test
