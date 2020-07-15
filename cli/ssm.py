@@ -8,6 +8,7 @@ from cli.util import (
     CA_PREFIXES,
     KEYS_DIR,
     BLINDING_KEYS_DIR,
+    btc2sat,
     save_masterkey_to_disk,
     save_salt_to_disk,
     get_masterkey_from_disk,
@@ -15,7 +16,8 @@ from cli.util import (
     bin_to_hex,
     check_dir,
     parse_path,
-    hdkey_to_base58
+    hdkey_to_base58,
+    get_number_inputs
 )
 
 SALT_LEN = 32
@@ -241,17 +243,18 @@ def sign_tx(chain, tx, fingerprints, paths, scriptpubkeys, values, dir=KEYS_DIR)
         child = get_child_from_path(chain, fingerprints[i], paths[i], dir)
         privkey = wally.bip32_key_get_priv_key(child)
         pubkey = wally.ec_public_key_from_private_key(privkey)
-        program = bytes.fromhex(scriptpubkeys[i])
+        witnessProgram = wally.hash160(pubkey)
+        scriptCode = bytearray([0x76, 0xa9, 0x14]) + witnessProgram + bytearray([0x88, 0xac])
         value = btc2sat(float(values[i]))
         if chain in ['bitcoin-main', 'bitcoin-test', 'bitcoin-regtest']:
             hashToSign = wally.tx_get_btc_signature_hash(Tx, i, 
-                program, 
+                scriptCode, 
                 value, # we need the index of the UTXO spent, or just take the value 
                 wally.WALLY_SIGHASH_ALL, 
                 wally.WALLY_TX_FLAG_USE_WITNESS)
         else:
             hashToSign = wally.tx_get_elements_signature_hash(Tx, i, 
-                program, 
+                scriptCode, 
                 value, # we need the index of the UTXO spent, or just take the value 
                 wally.WALLY_SIGHASH_ALL, 
                 wally.WALLY_TX_FLAG_USE_WITNESS)
