@@ -111,16 +111,14 @@ def test_sign_btc(tmpdir):
     fingerprints = []
     paths = []
     values = []
-    scripts = []
     for k, v in VECTORS.items():
         masterkey = bip32_key_from_base58(v[0])
         fingerprints.append(k)
         paths.append(v[1])
-        scripts.append(v[3])
         values.append(v[4])
         save_masterkey_to_disk(CHAINS[0], masterkey, k, False, keys_dir)
 
-    TXOUT = sign_tx(CHAINS[0], BTC_TXOUT, fingerprints[0], paths[0], scripts[0], values[0], keys_dir)
+    TXOUT = sign_tx(CHAINS[0], BTC_TXOUT, fingerprints[0], paths[0], values[0], keys_dir)
 
     print(f"assert {TXOUT} == {BTC_TXOUT}")
     assert TXOUT == BTC_TXOUT

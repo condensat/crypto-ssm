@@ -212,7 +212,7 @@ def get_xprv(chain, fingerprint):
     # now return the xprv in its base58 readable format
     return hdkey_to_base58(masterkey, True)
 
-def sign_tx(chain, tx, fingerprints, paths, scriptpubkeys, values, dir=KEYS_DIR):
+def sign_tx(chain, tx, fingerprints, paths, values, dir=KEYS_DIR):
     # first extract the fingerprints and paths in lists
     fingerprints = fingerprints.split()
     paths = paths.split()
@@ -220,12 +220,11 @@ def sign_tx(chain, tx, fingerprints, paths, scriptpubkeys, values, dir=KEYS_DIR)
     values = values.split()
     # Check if all the lists are of the same length
     try:
-        assert len(fingerprints) == len(paths) == len(scriptpubkeys) == len(values)
+        assert len(fingerprints) == len(paths) == len(values)
     except:
         raise exceptions.MissingValueError(f"""
                                             {len(fingerprints)} fingerprints, {len(paths)} 
-                                            paths, {len(scriptpubkeys)} scriptpubkeys 
-                                            and {len(values)} values provided. 
+                                            paths, and {len(values)} values provided. 
                                             Must be the same number.
                                             """)
 
