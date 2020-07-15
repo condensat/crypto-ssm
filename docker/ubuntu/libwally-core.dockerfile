@@ -1,4 +1,4 @@
-ARG LIBWALLY_CORE_VERSION=0.7.7
+# ARG LIBWALLY_CORE_VERSION=0.7.8
 
 FROM libwally-core-builder:${LIBWALLY_CORE_VERSION}-ubuntu AS builder
 
