@@ -216,7 +216,6 @@ def sign_tx(chain, tx, fingerprints, paths, values, dir=KEYS_DIR):
     # first extract the fingerprints and paths in lists
     fingerprints = fingerprints.split()
     paths = paths.split()
-    scriptpubkeys = scriptpubkeys.split()
     values = values.split()
     # Check if all the lists are of the same length
     try:
