@@ -13,16 +13,26 @@ ARG BITCOIN_VERSION=0.19.1
 ARG ELEMENTS_VERSION=0.18.1.6
 
 ENV LC_ALL=C.UTF-8
-
 ENV LANG=C.UTF-8 
 
-COPY demo/ /demo
+COPY demo/scripts/bitcoin-elements-simple.sh /crypto-ssm/scripts/bitcoin-elements-simple.sh
+RUN [ "/bin/bash", "-c", "/crypto-ssm/scripts/bitcoin-elements-simple.sh" ]
 
-RUN [ "/bin/bash", "-c", "/demo/scripts/bitcoin-elements-simple.sh" ]
-
+# requirements
 ENV PYTHONPATH='/usr/local/lib/python3.6/site-packages'
 
-RUN [ "python3.6m", "-m", "pip", "install", "-r", "/demo/requirements.txt" ]
+COPY requirements.txt /crypto-ssm/requirements.txt
+RUN [ "python3.6m", "-m", "pip", "install", "-r", "/crypto-ssm/requirements.txt" ]
+
+COPY cli/requirements.txt /crypto-ssm/cli/requirements.txt
+RUN [ "python3.6m", "-m", "pip", "install", "-r", "/crypto-ssm/cli/requirements.txt" ]
+
+COPY test/requirements.txt /crypto-ssm/test/requirements.txt
+RUN [ "python3.6m", "-m", "pip", "install", "-r", "/crypto-ssm/test/requirements.txt" ]
+
+COPY ssm/requirements.txt /crypto-ssm/ssm/requirements.txt
+RUN [ "python3.6m", "-m", "pip", "install", "-r", "/crypto-ssm/ssm/requirements.txt" ]
+
 
 COPY ssm /crypto-ssm/ssm
 COPY cli /crypto-ssm/cli
