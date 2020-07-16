@@ -7,27 +7,29 @@
 
 ## Main program
 
-Main program can run each sub-command with log level.
-
-- Stderr is used for logging.
-- Stdout is used for print result in json
-
 ```bash
-  python ssm.py --log=debug genaddress --id=42
-```
+ssm-cli --help
+Usage: ssm-cli [OPTIONS] COMMAND [ARGS]...
 
-```bash
-  python ssm.py --log=debug signtx --tx=txid
-```
+  Crypto SSM Command-Line Interface
 
-## Sub-commands
+Options:
+  -c, --chain [bitcoin-main|bitcoin-test|bitcoin-regtest|liquidv1|elements-regtest]
+                                  Define the chain we're on out of a list
+                                  (default = 'bitcoin-main').
+  -p, --password TEXT             Key to unlock the private keys.
+  -v, --verbose                   Print more information, may be used multiple
+                                  times.
+  --version                       Show the version and exit.
+  --help                          Show this message and exit.
 
-Each sub-command can run separately for development:
-
-```bash
-  python genaddress.py
-```
-
-```bash
-  python signtx.py
+Commands:
+  get-xprv        Get the extended private key (xprv) that corresponds to some
+                  master key.
+  get-xpub        Get the extended public key (xpub) that corresponds to some
+                  master key.
+  new-address     Generate a new address for chain and master key
+  new-master      Generate a new seed and master key for the chain
+  restore-master  Restore masterkey from base58 xprv
+  sign-tx         Sign all or some inputs of a serialized transaction.
 ```
