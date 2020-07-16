@@ -55,7 +55,7 @@ def generate_mnemonic_from_entropy(entropy):
                                                 "It must be 16 or 32 bytes.")
     mnemonic = wally.bip39_mnemonic_from_bytes(None, entropy) # 1st argument is language, default is english
     logging.info(f"mnemonic generated from entropy.")
-    logging.debug(f"Mnenonic is {' '.join(mnemonic)}")
+    logging.debug(f"Mnenonic is {''.join(mnemonic)}")
     return mnemonic
 
 def generate_master_blinding_key_from_seed(seed, chain, fingerprint, dir=KEYS_DIR):
@@ -227,6 +227,7 @@ def sign_tx(chain, tx, fingerprints, paths, values, dir=KEYS_DIR):
                                             Must be the same number.
                                             """)
 
+    # TODO: check that the tx is SEGWIT
     # Get the number of inputs
     inputs_len = get_number_inputs(tx)
 
@@ -253,7 +254,7 @@ def sign_tx(chain, tx, fingerprints, paths, values, dir=KEYS_DIR):
         else:
             hashToSign = wally.tx_get_elements_signature_hash(Tx, i, 
                 scriptCode, 
-                value, # we need the index of the UTXO spent, or just take the value 
+                value, # use the get_tx_output_value function
                 wally.WALLY_SIGHASH_ALL, 
                 wally.WALLY_TX_FLAG_USE_WITNESS)
         sig = wally.ec_sig_from_bytes(privkey, hashToSign, wally.EC_FLAG_ECDSA | wally.EC_FLAG_GRIND_R)
@@ -267,4 +268,4 @@ def sign_tx(chain, tx, fingerprints, paths, values, dir=KEYS_DIR):
     if chain in ['bitcoin-main', 'bitcoin-test', 'bitcoin-regtest']: 
         return wally.tx_to_hex(Tx, wally.WALLY_TX_FLAG_USE_WITNESS) 
     else: 
-        return wally.tx_to_hex(Tx, wally.WALLY_TX_FLAG_USE_WITNESS & wally.WALLY_TX_FLAG_USE_ELEMENTS)
+        return wally.tx_to_hex(Tx, wally.WALLY_TX_FLAG_USE_WITNESS | wally.WALLY_TX_FLAG_USE_ELEMENTS)
