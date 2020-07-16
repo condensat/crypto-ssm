@@ -24,7 +24,7 @@ ENV PYTHONPATH='/usr/local/lib/python3.6/site-packages'
 
 RUN [ "python3.6m", "-m", "pip", "install", "-r", "/demo/requirements.txt" ]
 
-COPY core /crypto-ssm/core
+COPY ssm /crypto-ssm/ssm
 COPY cli /crypto-ssm/cli
 COPY test /crypto-ssm/test
 

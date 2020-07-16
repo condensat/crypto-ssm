@@ -9,11 +9,11 @@ from wallycore import (
     BIP32_FLAG_KEY_PRIVATE
 )
 
-from core.ssm import (
+from ssm.core import (
     get_child_from_path,   
 )
 
-from core.util import (
+from ssm.util import (
     hdkey_to_base58,
     get_masterkey_from_disk,
     harden,

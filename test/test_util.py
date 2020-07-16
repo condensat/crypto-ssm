@@ -1,7 +1,7 @@
 import pytest
 from io import BytesIO
 
-from core.util import (
+from ssm.util import (
     hdkey_to_base58,
     get_masterkey_from_disk,
     harden,

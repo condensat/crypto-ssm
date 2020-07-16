@@ -2,8 +2,8 @@ import wallycore as wally
 import logging
 from os import urandom, path
 
-import core.exceptions as exceptions
-from core.util import (
+import ssm.exceptions as exceptions
+from ssm.util import (
     CHAINS,
     PREFIXES,
     CA_PREFIXES,

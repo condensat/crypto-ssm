@@ -7,7 +7,7 @@ from wallycore import (
     bip32_key_from_base58,
 )
 
-from core.ssm import (
+from ssm.core import (
     generate_entropy_from_password,
     generate_mnemonic_from_entropy,
     generate_seed_from_mnemonic,
@@ -16,7 +16,7 @@ from core.ssm import (
     generate_new_hd_wallet,    
 )
 
-from core.util import (
+from ssm.util import (
     hdkey_to_base58,
     get_masterkey_from_disk,
 )

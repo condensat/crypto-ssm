@@ -4,16 +4,16 @@ import logging
 import sys
 from collections import namedtuple
 
-import core.exceptions as exceptions
-import core.ssm as ssm
+import ssm.exceptions as exceptions
+import ssm.core as ssm
 
-from core.connect import (
+from ssm.connect import (
     ConnCtx,
     BITCOIN_REGTEST_RPC_PORT,
     LIQUID_REGTEST_RPC_PORT
 )
 
-from core.util import (
+from ssm.util import (
     CHAINS,
     set_logging,
 )

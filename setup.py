@@ -3,7 +3,7 @@ from setuptools import setup
 setup(
     name='crypto-ssm',
     version='0.1',
-    packages=['core', 'cli'],
+    packages=['ssm', 'cli'],
     #include_package_data=True,
     install_requires=['Click==7.0'],
     entry_points={
