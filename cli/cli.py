@@ -68,7 +68,7 @@ def new_master(obj, entropy, isbytes):
 
     fingerprint = ssm.generate_new_hd_wallet(obj.chain, entropy, isbytes)
 
-    click.echo(encode_payload(fingerprint))
+    click.echo(fingerprint)
 
     logging.info(f"New master key generated for {obj.chain}! Fingerprint: {fingerprint}")
 
