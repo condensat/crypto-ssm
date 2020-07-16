@@ -15,7 +15,6 @@ from cli.connect import (
 from cli.util import (
     CHAINS,
     set_logging,
-    encode_payload,
 )
 
 def critical(title='', message='', start_over=True):
@@ -82,6 +81,8 @@ def restore_master(obj, hdkey, blindingkey):
     For debugging purpose, don't use this in production.
     """
 
+    logging.info(f"Restore master key {hdkey} for {obj.chain}")
+
     fingerprint = ssm.restore_hd_wallet(obj.chain, hdkey, blindingkey)
 
     click.echo(fingerprint)
@@ -113,9 +114,7 @@ def new_address(obj, fingerprint, path):
     if bkey is not None:
         return_value['blinding_key'] = bytes(bkey).hex()
 
-    logging.debug(return_value)
-
-    click.echo(encode_payload(return_value))
+    click.echo(json.dumps(return_value))
 
 @cli.command(short_help='Get the extended public key (xpub) that corresponds to some master key.')
 @click.option('-f', '--fingerprint', required=True,
@@ -135,7 +134,7 @@ def get_xpub(obj, fingerprint):
 
     logging.debug(f"{obj.chain} {fingerprint} masterkey's xpub is {xpub}")
 
-    click.echo(encode_payload(xpub))
+    click.echo(xpub)
 
 @cli.command(short_help='Sign all or some inputs of a serialized transaction.')
 @click.argument('transaction')
@@ -158,7 +157,7 @@ def sign_tx(obj, transaction, fingerprints, paths, values):
 
     logging.debug(f"signed tx is {signed_tx}")
 
-    click.echo(encode_payload(signed_tx))
+    click.echo(signed_tx)
 
 @cli.command(short_help='Get the extended private key (xprv) that corresponds to some master key.')
 @click.option('-f', '--fingerprint', required=True,

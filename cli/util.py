@@ -159,13 +159,6 @@ def parse_path(path):
         lpath.append(harden(path))
     return lpath
 
-def encode_payload(data):
-    json_data = json.dumps(data)
-    data_bytes = bytes(json_data, 'utf-8')
-    data_hex = data_bytes.hex()
-
-    return data_hex
-
 def get_txid(tx):
     "Return the double sha256 hash of the tx"
     return sha256d(tx)
