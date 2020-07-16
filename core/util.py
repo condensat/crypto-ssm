@@ -11,7 +11,7 @@ from wallycore import (
     BIP32_FLAG_KEY_PUBLIC,
 )
 
-from cli.exceptions import (
+from core.exceptions import (
     UnexpectedValueError,
     UnsupportedLiquidVersionError,
     UnsupportedWalletVersionError,

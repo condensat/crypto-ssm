@@ -3,16 +3,17 @@ import json
 import logging
 import sys
 from collections import namedtuple
-import cli.exceptions as exceptions
-import cli.ssm as ssm
 
-from cli.connect import (
+import core.exceptions as exceptions
+import core.ssm as ssm
+
+from core.connect import (
     ConnCtx,
     BITCOIN_REGTEST_RPC_PORT,
     LIQUID_REGTEST_RPC_PORT
 )
 
-from cli.util import (
+from core.util import (
     CHAINS,
     set_logging,
 )
