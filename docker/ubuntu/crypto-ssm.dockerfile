@@ -22,17 +22,7 @@ ENV LANG=C.UTF-8
 ENV PYTHONPATH='/usr/local/lib/python3.6/site-packages'
 
 COPY requirements.txt /crypto-ssm/requirements.txt
-RUN [ "python3.6m", "-m", "pip", "install", "-r", "/crypto-ssm/requirements.txt" ]
-
-COPY cli/requirements.txt /crypto-ssm/cli/requirements.txt
-RUN [ "python3.6m", "-m", "pip", "install", "-r", "/crypto-ssm/cli/requirements.txt" ]
-
-COPY test/requirements.txt /crypto-ssm/test/requirements.txt
-RUN [ "python3.6m", "-m", "pip", "install", "-r", "/crypto-ssm/test/requirements.txt" ]
-
-COPY ssm/requirements.txt /crypto-ssm/ssm/requirements.txt
-RUN [ "python3.6m", "-m", "pip", "install", "-r", "/crypto-ssm/ssm/requirements.txt" ]
-
+RUN [ "python3", "-m", "pip", "install", "-r", "/crypto-ssm/requirements.txt" ]
 
 COPY ssm /crypto-ssm/ssm
 COPY cli /crypto-ssm/cli
