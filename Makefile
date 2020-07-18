@@ -16,13 +16,14 @@ wallycore: builder
 
 crypto-ssm: wallycore
 	docker build -f docker/ubuntu/crypto-ssm.dockerfile --build-arg=LIBWALLY_CORE_VERSION=$(LIBWALLY_VERSION) . -t crypto-ssm:$(LIBWALLY_VERSION)-ubuntu
+	docker volume create ssm-keys
 
 start: crypto-ssm
-	docker run -ti --rm crypto-ssm:$(LIBWALLY_VERSION)-ubuntu
+	docker run -ti --rm --mount source=ssm-keys,target=/ssm-keys crypto-ssm:$(LIBWALLY_VERSION)-ubuntu
 
 server: crypto-ssm
 	# docker run -ti --rm -p 5000:5000 crypto-ssm:$(LIBWALLY_VERSION)-ubuntu python3 /crypto-ssm/server/server.py
-	docker run -ti --rm -v $$(pwd)/ssm-keys:/ssm-keys -p 5000:5000 crypto-ssm:$(LIBWALLY_VERSION)-ubuntu python3 /crypto-ssm/server/server.py
+	docker run -ti --rm --mount source=ssm-keys,target=/ssm-keys -p 5000:5000 crypto-ssm:$(LIBWALLY_VERSION)-ubuntu python3 /crypto-ssm/server/server.py
 
 test: crypto-ssm
 	docker run -t --rm -w /crypto-ssm crypto-ssm:$(LIBWALLY_VERSION)-ubuntu pytest
