@@ -1,16 +1,11 @@
 from flask import Flask
+import api
 
-from flask_jsonrpc import JSONRPC
-
-# Flask application
 app = Flask(__name__)
+api.jsonrpc(app, '/api/v1')
 
-# Flask-JSONRPC
-jsonrpc = JSONRPC(app, '/api/v1', enable_web_browsable_api=False)
-
-@jsonrpc.method('new_master')
-def new_master(entropy: str) -> dict:
-  return {"entropy": entropy}
+# register handlers
+import handlers
 
 if __name__ == '__main__':
-  app.run(host='0.0.0.0', debug=True)
+  app.run(host='0.0.0.0', debug=False)
