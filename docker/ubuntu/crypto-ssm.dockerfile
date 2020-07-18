@@ -26,7 +26,7 @@ RUN [ "python3", "-m", "pip", "install", "-r", "/crypto-ssm/requirements.txt" ]
 
 COPY ssm /crypto-ssm/ssm
 COPY cli /crypto-ssm/cli
-COPY test /crypto-ssm/test
+COPY server /crypto-ssm/server
 
 COPY setup.py /crypto-ssm
 
