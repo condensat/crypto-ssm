@@ -7,4 +7,5 @@ RUN git clone https://github.com/ElementsProject/libwally-core.git -b release_$L
 
 
 WORKDIR /src/libwally
-RUN contrib/ubuntu_deps.sh
+RUN DEBIAN_FRONTEND=noninteractive contrib/ubuntu_deps.sh
+
