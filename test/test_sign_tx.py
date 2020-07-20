@@ -14,7 +14,8 @@ from wallycore import (
 
 from ssm.core import (
     get_child_from_path,
-    sign_tx, 
+    sign_tx,
+    restore_hd_wallet,
 )
 
 from ssm.util import (
@@ -46,27 +47,28 @@ VECTORS = {
     ]
 }
 
-BTC_PREVTX = "ead83a99b5055fa2c225aab11b3b99c1207fb134c544ffd31f93d7a6a51d24cc"
-BTC_RAWTX = "020000000001013cb016fe5676d8e8e30c5ef70098da6870cd44b7decbbd234d48f4e9b57728db0000000000feffffff0200e1f50500000000160014ce903d07ab2d8d3f23bfbba65ca326cbf4b106fafc05102401000000160014ca072872ac9654716de7377edc727f2cc5997c8002473044022039c8bb2116934d6701a6cb5a01befed791af048d33926a0193733499a3949a1f022008f953873d54365c5ca0725c09f12f6f7c19dc77ed9c7a222227d2ecd70beef8012103ea7057834d89ebf91b02d67725aa4ed7b5a418f75ee6aa8c06be54d3db083c1aca000000"
+# our deposit to an address generated with our SSM
+BTC_PREVTX = "d4c357ccf17cf4309b41fe18d777d7b5930f3f0f0525064435d3c9b76ba2d77d"
+BTC_RAWTX = "02000000000101a289e4117137500b4badbadd9ea60d322fec4bc6dc460808ff7ab8ed5c42fa460000000000feffffff0200e1f50500000000160014ce903d07ab2d8d3f23bfbba65ca326cbf4b106fa7310102401000000160014ca072872ac9654716de7377edc727f2cc5997c800247304402205ecff480d22a816037a6105d35510d7e7d1bb217f9c12ce44c8052ad4e91861902202103c779953e2dfbbab39ce608bd73978433c5a89e86531517ce463fe5778bd1012103ea7057834d89ebf91b02d67725aa4ed7b5a418f75ee6aa8c06be54d3db083c1acb000000"
 """
 {
-  "txid": "ead83a99b5055fa2c225aab11b3b99c1207fb134c544ffd31f93d7a6a51d24cc",
-  "hash": "e9efa1cb6464c6a29ea10eb41e622ea62a9de9f883378c05d3f3641c10e37ca6",
+  "txid": "d4c357ccf17cf4309b41fe18d777d7b5930f3f0f0525064435d3c9b76ba2d77d",
+  "hash": "e056aaa234365fcf57a3b5044ae583be1105a5fadefa1dae621cf130ae59b342",
   "version": 2,
   "size": 222,
   "vsize": 141,
   "weight": 561,
-  "locktime": 202,
+  "locktime": 203,
   "vin": [
     {
-      "txid": "db2877b5e9f4484d23bdcbdeb744cd7068da9800f75e0ce3e8d87656fe16b03c",
+      "txid": "46fa425cedb87aff080846dcc64bec2f320da69eddbaad4b0b50377111e489a2",
       "vout": 0,
       "scriptSig": {
         "asm": "",
         "hex": ""
       },
       "txinwitness": [
-        "3044022039c8bb2116934d6701a6cb5a01befed791af048d33926a0193733499a3949a1f022008f953873d54365c5ca0725c09f12f6f7c19dc77ed9c7a222227d2ecd70beef801",
+        "304402205ecff480d22a816037a6105d35510d7e7d1bb217f9c12ce44c8052ad4e91861902202103c779953e2dfbbab39ce608bd73978433c5a89e86531517ce463fe5778bd101",
         "03ea7057834d89ebf91b02d67725aa4ed7b5a418f75ee6aa8c06be54d3db083c1a"
       ],
       "sequence": 4294967294
@@ -87,7 +89,7 @@ BTC_RAWTX = "020000000001013cb016fe5676d8e8e30c5ef70098da6870cd44b7decbbd234d48f
       }
     },
     {
-      "value": 48.99997180,
+      "value": 48.99999859,
       "n": 1,
       "scriptPubKey": {
         "asm": "0 ca072872ac9654716de7377edc727f2cc5997c80",
@@ -103,8 +105,52 @@ BTC_RAWTX = "020000000001013cb016fe5676d8e8e30c5ef70098da6870cd44b7decbbd234d48f
 }
 """
 
-BTC_TXOUT = "02000000000101cc241da5a6d7931fd3ff44c534b17f20c1993b1bb1aa25c2a25f05b5993ad8ea0000000000ffffffff01c09ee60500000000160014fb4aa4cc31db90af4afb19fbbaedd38429634a800247304402205421766517c73075f9781224c654b4bb5c80080c73908371b9fa15b8f6d470e10220277101e5811da3492a264bb83e01cc6971c7e24c3bb9c7ad46675eb83d9eae6e01210358b092382102ea1beb1fcf60127f60e5efb67828a1688deb27bf077b8a1f3e7500000000"
-SIGNED_TXID = "1ef17186cf43bedf27cea7827f2bbdfd7e5b3dbfc34c109fef21e2d2f3b9d4de"
+# unsigned spending raw tx that we pass to our signing function
+BTC_TXOUT = "02000000017dd7a26bb7c9d335440625050f3f0f93b5d777d718fe419b30f47cf1cc57c3d40000000000ffffffff01605af40500000000160014aa7e9c8bbf41d3bc16226551149aa598298f749d00000000"
+# spending tx signed by Bitcoin/Elements, return value should be equal to this
+SIGNED_TXID = "6c7980f9dbc4131ba38f51b0155a18e2f5f7e7e98f37e014010d05a60aada543"
+SIGNED_TX = "020000000001017dd7a26bb7c9d335440625050f3f0f93b5d777d718fe419b30f47cf1cc57c3d40000000000ffffffff01605af40500000000160014aa7e9c8bbf41d3bc16226551149aa598298f749d02473044022053456f83819b446f189361801d2762b6fd32457a8ddffe762b3a0df07fa9c2de022015dcc3ada0b4cb6622663e5883720d3b622bd4ee26ca9f4c2f1bcdbbb4ddaa3001210358b092382102ea1beb1fcf60127f60e5efb67828a1688deb27bf077b8a1f3e7500000000"
+"""
+{
+  "txid": "6c7980f9dbc4131ba38f51b0155a18e2f5f7e7e98f37e014010d05a60aada543",
+  "hash": "7c205ad4e896ad092ce707a3d9988054aef4790b2c7860612be47f79b4d78bde",
+  "version": 2,
+  "size": 191,
+  "vsize": 110,
+  "weight": 437,
+  "locktime": 0,
+  "vin": [
+    {
+      "txid": "d4c357ccf17cf4309b41fe18d777d7b5930f3f0f0525064435d3c9b76ba2d77d",
+      "vout": 0,
+      "scriptSig": {
+        "asm": "",
+        "hex": ""
+      },
+      "txinwitness": [
+        "3044022053456f83819b446f189361801d2762b6fd32457a8ddffe762b3a0df07fa9c2de022015dcc3ada0b4cb6622663e5883720d3b622bd4ee26ca9f4c2f1bcdbbb4ddaa3001",
+        "0358b092382102ea1beb1fcf60127f60e5efb67828a1688deb27bf077b8a1f3e75"
+      ],
+      "sequence": 4294967295
+    }
+  ],
+  "vout": [
+    {
+      "value": 0.99900000,
+      "n": 0,
+      "scriptPubKey": {
+        "asm": "0 aa7e9c8bbf41d3bc16226551149aa598298f749d",
+        "hex": "0014aa7e9c8bbf41d3bc16226551149aa598298f749d",
+        "reqSigs": 1,
+        "type": "witness_v0_keyhash",
+        "addresses": [
+          "bcrt1q4flfezalg8fmc93zv4g3fx49nq5c7aya0c3y6r"
+        ]
+      }
+    }
+  ]
+}
+"""
 
 def test_sign_btc(tmpdir):
     keys_dir = tmpdir.mkdir("ssm_keys")
@@ -112,15 +158,15 @@ def test_sign_btc(tmpdir):
     paths = []
     values = []
     for k, v in VECTORS.items():
-        masterkey = bip32_key_from_base58(v[0])
         fingerprints.append(k)
         paths.append(v[1])
         values.append(v[4])
-        save_masterkey_to_disk(CHAINS[0], masterkey, k, False, keys_dir)
+        restore_hd_wallet(CHAINS[0], v[0], "", keys_dir)
 
-    TXOUT = sign_tx(CHAINS[0], BTC_TXOUT, fingerprints[0], paths[0], values[0], keys_dir)
+    for i in range(len(VECTORS.items())):
+      TXOUT = sign_tx(CHAINS[0], BTC_TXOUT, fingerprints[i], paths[i], values[i], keys_dir)
 
-    print(f"assert {TXOUT} == {BTC_TXOUT}")
-    assert TXOUT == BTC_TXOUT
+      print(f"assert {TXOUT} == {SIGNED_TX}")
+      assert TXOUT == SIGNED_TX
 
 
