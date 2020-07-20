@@ -1,5 +1,7 @@
 .DEFAULT_GOAL := build
 LIBWALLY_VERSION?=0.7.8
+#BITCOIN_VERSION?=0.20.0
+#ELEMENTS_VERSION?=0.18.1.8
 
 builder:
 	docker build -f docker/ubuntu/libwally-core-builder.dockerfile --build-arg=LIBWALLY_CORE_VERSION=$(LIBWALLY_VERSION) . -t libwally-core-builder:$(LIBWALLY_VERSION)-ubuntu

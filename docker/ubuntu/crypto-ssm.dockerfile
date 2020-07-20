@@ -8,15 +8,15 @@ RUN apt-get update -yy &&\
     apt-get -yy clean &&\
     rm -rf /var/lib/apt/lists/* /var/cache/* /tmp/* /usr/share/locale/* /usr/share/man /usr/share/doc /lib/xtables/libip6*
 
-ARG BITCOIN_VERSION=0.19.1
+#ARG BITCOIN_VERSION=0.19.1
 
-ARG ELEMENTS_VERSION=0.18.1.6
+#ARG ELEMENTS_VERSION=0.18.1.6
 
 ENV LC_ALL=C.UTF-8
 ENV LANG=C.UTF-8 
 
-COPY demo/scripts/bitcoin-elements-simple.sh /crypto-ssm/scripts/bitcoin-elements-simple.sh
-RUN [ "/bin/bash", "-c", "/crypto-ssm/scripts/bitcoin-elements-simple.sh" ]
+#COPY demo/scripts/bitcoin-elements-simple.sh /crypto-ssm/scripts/bitcoin-elements-simple.sh
+#RUN [ "/bin/bash", "-c", "/crypto-ssm/scripts/bitcoin-elements-simple.sh" ]
 
 # requirements
 ENV PYTHONPATH='/usr/local/lib/python3.6/site-packages'
