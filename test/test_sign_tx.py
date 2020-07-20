@@ -59,11 +59,20 @@ def test_sign_btc(sign_tx_btc_test_vectors, tmpdir):
         values = ""
         for key in v["hdkeys"]:
           fingerprint = restore_hd_wallet(CHAINS[0], key, "", keys_dir)
-          fingerprints = fingerprints + fingerprint
+          if not fingerprints:
+            fingerprints = fingerprint
+          else:
+            fingerprints = fingerprints + " " + fingerprint
         for path in v["paths"]:
-          paths = paths + path
+          if not paths:
+            paths = path
+          else:
+            paths = paths + " " + path
         for value in v["values"]:
-          values = values + value
+          if not values:
+            values = value
+          else:
+            values = values + " " + value
           
         tx_out = sign_tx(CHAINS[0], v["prev_tx"][0], fingerprints, paths, values, keys_dir)
         assert tx_out == v["signed_tx"][0]
