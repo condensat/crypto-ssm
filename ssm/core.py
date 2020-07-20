@@ -213,6 +213,38 @@ def get_xprv(chain, fingerprint):
     # now return the xprv in its base58 readable format
     return hdkey_to_base58(masterkey, True)
 
+def get_btc_sighash(tx, index, scriptCode, value):
+    hashToSign = wally.tx_get_btc_signature_hash(tx, index, 
+        scriptCode, 
+        value, 
+        wally.WALLY_SIGHASH_ALL, 
+        wally.WALLY_TX_FLAG_USE_WITNESS)
+    return hashToSign
+
+def sign_btc_input(tx, index, privkey, value):
+    # we need the value as an int in satoshis
+    value = btc2sat(float(value))
+
+    # we need the pubkey to write the ScriptCode that will be signed
+    pubkey = wally.ec_public_key_from_private_key(privkey)
+    witnessProgram = wally.hash160(pubkey)
+    scriptCode = bytearray([0x76, 0xa9, 0x14]) + witnessProgram + bytearray([0x88, 0xac])
+
+    # we can now calculate the signature hash
+    hashToSign = get_btc_sighash(tx, index, scriptCode, value)
+
+    # We sign the signature hash with the private key
+    sig = wally.ec_sig_from_bytes(privkey, hashToSign, wally.EC_FLAG_ECDSA | wally.EC_FLAG_GRIND_R)
+
+    # We now return the signature encoded in der format and add the SIGHASH
+    return wally.ec_sig_to_der(sig) + bytearray([wally.WALLY_SIGHASH_ALL])
+
+def get_witness_stack(sig, pubkey):
+    witnessStack = wally.tx_witness_stack_init(2)
+    wally.tx_witness_stack_add(witnessStack, sig)
+    wally.tx_witness_stack_add(witnessStack, pubkey)
+    return witnessStack
+
 def sign_tx(chain, tx, fingerprints, paths, values, dir=KEYS_DIR):
     # first extract the fingerprints and paths in lists
     fingerprints = fingerprints.split()
@@ -240,29 +272,20 @@ def sign_tx(chain, tx, fingerprints, paths, values, dir=KEYS_DIR):
            
     # Now we loop on each fingerprint provided, compute the sighash and sign the same index input
     for i in range(0, inputs_len):
+        # We first derive the child key for the provided fingerprint and path
         child = get_child_from_path(chain, fingerprints[i], paths[i], dir)
+
+        # From here we extract the private key that we will sign with
         privkey = wally.bip32_key_get_priv_key(child)
         pubkey = wally.ec_public_key_from_private_key(privkey)
-        witnessProgram = wally.hash160(pubkey)
-        scriptCode = bytearray([0x76, 0xa9, 0x14]) + witnessProgram + bytearray([0x88, 0xac])
-        value = btc2sat(float(values[i]))
-        if chain in ['bitcoin-main', 'bitcoin-test', 'bitcoin-regtest']:
-            hashToSign = wally.tx_get_btc_signature_hash(Tx, i, 
-                scriptCode, 
-                value, # we need the index of the UTXO spent, or just take the value 
-                wally.WALLY_SIGHASH_ALL, 
-                wally.WALLY_TX_FLAG_USE_WITNESS)
-        else:
-            hashToSign = wally.tx_get_elements_signature_hash(Tx, i, 
-                scriptCode, 
-                value, # use the get_tx_output_value function
-                wally.WALLY_SIGHASH_ALL, 
-                wally.WALLY_TX_FLAG_USE_WITNESS)
-        sig = wally.ec_sig_from_bytes(privkey, hashToSign, wally.EC_FLAG_ECDSA | wally.EC_FLAG_GRIND_R)
-        sig = wally.ec_sig_to_der(sig) + bytearray([wally.WALLY_SIGHASH_ALL])
-        witnessStack = wally.tx_witness_stack_init(2)
-        wally.tx_witness_stack_add(witnessStack, sig)
-        wally.tx_witness_stack_add(witnessStack, pubkey)
+
+        # we now sign the input and get the signature and pubkey to populate the witness
+        sig = sign_btc_input(Tx, i, privkey, values[i])
+
+        # Create a new witness stack and populate it with sig and pubkey
+        witnessStack = get_witness_stack(sig, pubkey)
+
+        # now add the witness stack to the current input
         wally.tx_set_input_witness(Tx, i, witnessStack)
 
     # Now return the hex of the signed tx
