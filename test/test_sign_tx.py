@@ -152,21 +152,22 @@ SIGNED_TX = "020000000001017dd7a26bb7c9d335440625050f3f0f93b5d777d718fe419b30f47
 }
 """
 
-def test_sign_btc(tmpdir):
+def test_sign_btc(sign_tx_btc_test_vectors, tmpdir):
     keys_dir = tmpdir.mkdir("ssm_keys")
-    fingerprints = []
-    paths = []
-    values = []
-    for k, v in VECTORS.items():
-        fingerprints.append(k)
-        paths.append(v[1])
-        values.append(v[4])
-        restore_hd_wallet(CHAINS[0], v[0], "", keys_dir)
+    for k, v in sign_tx_btc_test_vectors.items():
+        fingerprints = ""
+        paths = ""
+        values = ""
+        for key in v["hdkeys"]:
+          fingerprint = restore_hd_wallet(CHAINS[0], key, "", keys_dir)
+          fingerprints = fingerprints + fingerprint
+        for path in v["paths"]:
+          paths = paths + path
+        for value in v["values"]:
+          values = values + value
+          
+        tx_out = sign_tx(CHAINS[0], v["prev_tx"][0], fingerprints, paths, values, keys_dir)
+        assert tx_out == v["signed_tx"][0]
 
-    for i in range(len(VECTORS.items())):
-      TXOUT = sign_tx(CHAINS[0], BTC_TXOUT, fingerprints[i], paths[i], values[i], keys_dir)
 
-      print(f"assert {TXOUT} == {SIGNED_TX}")
-      assert TXOUT == SIGNED_TX
-
-
+# TODO: test multiple inputs and elements transaction
