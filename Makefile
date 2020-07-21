@@ -41,4 +41,4 @@ clean:
 deep-clean:
 	yes | docker system prune --all
 
-.PHONY: build clean start builder libwally-core wallycore test
+.PHONY: build clean start builder libwally-core wallycore server test
