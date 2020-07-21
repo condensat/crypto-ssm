@@ -13,5 +13,5 @@ def new_address(chain: str, fingerprint: str, path: str) -> dict:
             "chain": chain, 
             "address": address, 
             "pubkey": bytes(pubkey).hex(), 
-            "blinding key": bytes(bkey).hex()
+            "blinding_key": bytes(bkey).hex()
             }
