@@ -4,6 +4,7 @@ build:
 	docker build -t registry.condensat.space/crypto-ssm-tor:0.1.0 .
 
 deploy: build
+	cat $(REGISTRY_PASSWORD) | docker login registry.condensat.space --username condensat --password-stdin
 	docker push registry.condensat.space/crypto-ssm-tor:0.1.0
 
 start:
