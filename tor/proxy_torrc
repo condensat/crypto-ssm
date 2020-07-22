@@ -1,0 +1,6 @@
+Log notice stdout
+SocksPort 0.0.0.0:9150
+DataDirectory /var/lib/tor
+
+HiddenServiceDir /var/lib/tor/ssm-service
+HiddenServicePort 80 crypto_ssm:5000
