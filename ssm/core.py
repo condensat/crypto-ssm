@@ -250,19 +250,20 @@ def sign_tx(chain, tx, fingerprints, paths, values, dir=KEYS_DIR):
     fingerprints = fingerprints.split()
     paths = paths.split()
     values = values.split()
+
+    # Get the number of inputs
+    inputs_len = get_number_inputs(tx)
     # Check if all the lists are of the same length
     try:
-        assert len(fingerprints) == len(paths) == len(values)
+        assert inputs_len == len(fingerprints) == len(paths) == len(values)
     except:
         raise exceptions.MissingValueError(f"""
-                                            {len(fingerprints)} fingerprints, {len(paths)} 
-                                            paths, and {len(values)} values provided. 
+                                            Tx has {inputs_len} inputs, {len(fingerprints)} fingerprints, 
+                                            {len(paths)} paths, and {len(values)} values provided. 
                                             Must be the same number.
                                             """)
 
     # TODO: check that the tx is SEGWIT
-    # Get the number of inputs
-    inputs_len = get_number_inputs(tx)
 
     # Get a tx object from the tx_hex
     if chain in ['bitcoin-main', 'bitcoin-test', 'bitcoin-regtest']: 
