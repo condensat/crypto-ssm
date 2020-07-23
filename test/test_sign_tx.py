@@ -27,7 +27,7 @@ from ssm.util import (
 )
 
 CHAINS = ['bitcoin-regtest', 'elements-regtest']
-TEST_VECTORS = path.join(path.dirname(path.realpath(__file__)), "sign_tx_btc_test_vectors.json")
+BTC_VECTORS = path.join(path.dirname(path.realpath(__file__)), "sign_tx_btc_test_vectors.json")
 
 ENTROPY = "91815eb893f3bc5b1798546b2519d0ac102b2563958c94fe863a65161e9098c5"
 WIF_TEST = "cSTYZjZgieMXDM5rmw1o4P4d8kejMEHw8C9M3UZ1o7BgAV5dtLNo"
@@ -48,34 +48,40 @@ SIGNED_TX = "020000000001017dd7a26bb7c9d335440625050f3f0f93b5d777d718fe419b30f47
 
 @pytest.fixture
 def sign_tx_btc_test_vectors():
-    with open(TEST_VECTORS) as f:
+    with open(BTC_VECTORS) as f:
         return json.load(f)
+
+def prepare_signature(test: dict, keys_dir: str):
+    fingerprints = ""
+    paths = ""
+    values = ""
+    for key in test["hdkeys"]:
+      fingerprint = restore_hd_wallet(CHAINS[0], key, "", keys_dir)
+      if not fingerprints:
+        fingerprints = fingerprint
+      else:
+        fingerprints = fingerprints + " " + fingerprint
+    for path in test["paths"]:
+      if not paths:
+        paths = path
+      else:
+        paths = paths + " " + path
+    for value in test["values"]:
+      if not values:
+        values = value
+      else:
+        values = values + " " + value
+
+    prev_tx = test["prev_tx"][0]
+
+    return fingerprints, paths, values, prev_tx
 
 def test_sign_btc(sign_tx_btc_test_vectors, tmpdir):
     keys_dir = tmpdir.mkdir("ssm_keys")
-    for k, v in sign_tx_btc_test_vectors.items():
-        fingerprints = ""
-        paths = ""
-        values = ""
-        for key in v["hdkeys"]:
-          fingerprint = restore_hd_wallet(CHAINS[0], key, "", keys_dir)
-          if not fingerprints:
-            fingerprints = fingerprint
-          else:
-            fingerprints = fingerprints + " " + fingerprint
-        for path in v["paths"]:
-          if not paths:
-            paths = path
-          else:
-            paths = paths + " " + path
-        for value in v["values"]:
-          if not values:
-            values = value
-          else:
-            values = values + " " + value
-          
-        tx_out = sign_tx(CHAINS[0], v["prev_tx"][0], fingerprints, paths, values, keys_dir)
-        assert tx_out == v["signed_tx"][0]
+    for _, v in sign_tx_btc_test_vectors.items():
+      fingerprints, paths, values, prev_tx = prepare_signature(v.copy(), keys_dir)
+      tx_out = sign_tx(CHAINS[0], prev_tx, fingerprints, paths, values, keys_dir)
+      assert tx_out == v["signed_tx"][0]
 
 
 # TODO: test multiple inputs and elements transaction
