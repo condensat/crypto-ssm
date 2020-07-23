@@ -26,8 +26,11 @@ from ssm.util import (
     save_masterkey_to_disk,
 )
 
+import ssm.exceptions as exceptions
+
 CHAINS = ['bitcoin-regtest', 'elements-regtest']
 BTC_VECTORS = path.join(path.dirname(path.realpath(__file__)), "sign_tx_btc_test_vectors.json")
+FALSE_VECTORS = path.join(path.dirname(path.realpath(__file__)), "sign_tx_false_test_vectors.json")
 
 ENTROPY = "91815eb893f3bc5b1798546b2519d0ac102b2563958c94fe863a65161e9098c5"
 WIF_TEST = "cSTYZjZgieMXDM5rmw1o4P4d8kejMEHw8C9M3UZ1o7BgAV5dtLNo"
@@ -35,6 +38,7 @@ WIF_TEST = "cSTYZjZgieMXDM5rmw1o4P4d8kejMEHw8C9M3UZ1o7BgAV5dtLNo"
 HDKEY_TEST = "tprv8ZgxMBicQKsPe8NFkADNQ7GMKyBkaWTRkrHStwdzcR9HvRbjbq6bNi37G3biAFtUE4hUmnuHojdqJdnqQ9qETcszgW41gn1e2GMjimt8HCQ"
 #HDKEY_MAIN = "xprv9s21ZrQH143K3K8j5bMsETeN1qmYLzRRRJNL2XDY8Sep8precTkqrxffLsS49tW9rdAhmhHXeP42qnF6GwVHeZcQ9rqi2RHb7AcKH5ohgCV"
 FINGERPRINT = "a2ef94f8"
+BLINDING_KEY = "cf215ffecd670b7427b2fc90ee129ab6f801c1deed4a1b9b1b0341a8c05d8a43aafb994891a4d42e9afefd0614d497e65d572f939e04190659f93f5bad8d446e"
 
 # our deposit to an address generated with our SSM
 BTC_PREVTX = "d4c357ccf17cf4309b41fe18d777d7b5930f3f0f0525064435d3c9b76ba2d77d"
@@ -49,6 +53,11 @@ SIGNED_TX = "020000000001017dd7a26bb7c9d335440625050f3f0f93b5d777d718fe419b30f47
 @pytest.fixture
 def sign_tx_btc_test_vectors():
     with open(BTC_VECTORS) as f:
+        return json.load(f)
+
+@pytest.fixture
+def sign_tx_false_test_vectors():
+    with open(FALSE_VECTORS) as f:
         return json.load(f)
 
 def prepare_signature(test: dict, keys_dir: str):
@@ -75,6 +84,14 @@ def prepare_signature(test: dict, keys_dir: str):
     prev_tx = test["prev_tx"][0]
 
     return fingerprints, paths, values, prev_tx
+
+def test_wrong_number_inputs(sign_tx_false_test_vectors, tmpdir):
+    keys_dir = tmpdir.mkdir("ssm_keys")
+    for k, v in sign_tx_false_test_vectors.items():
+        if "wrong number" in k:
+            fingerprints, paths, values, prev_tx = prepare_signature(v.copy(), keys_dir)
+            with pytest.raises(exceptions.MissingValueError):
+                sign_tx(CHAINS[0], prev_tx, fingerprints, paths, values, keys_dir)
 
 def test_sign_btc(sign_tx_btc_test_vectors, tmpdir):
     keys_dir = tmpdir.mkdir("ssm_keys")
