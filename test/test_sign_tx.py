@@ -60,28 +60,28 @@ def sign_tx_false_test_vectors():
     with open(FALSE_VECTORS) as f:
         return json.load(f)
 
-def prepare_signature(test: dict, keys_dir: str):
+def prepare_signature(chain:str, case: dict, keys_dir: str):
     fingerprints = ""
     paths = ""
     values = ""
-    for key in test["hdkeys"]:
-      fingerprint = restore_hd_wallet(CHAINS[0], key, "", keys_dir)
+    for key in case["hdkeys"]:
+      fingerprint = restore_hd_wallet(chain, key, "", keys_dir)
       if not fingerprints:
         fingerprints = fingerprint
       else:
         fingerprints = fingerprints + " " + fingerprint
-    for path in test["paths"]:
+    for path in case["paths"]:
       if not paths:
         paths = path
       else:
         paths = paths + " " + path
-    for value in test["values"]:
+    for value in case["values"]:
       if not values:
         values = value
       else:
         values = values + " " + value
 
-    prev_tx = test["prev_tx"][0]
+    prev_tx = case["prev_tx"][0]
 
     return fingerprints, paths, values, prev_tx
 
@@ -89,7 +89,7 @@ def test_wrong_number_inputs(sign_tx_false_test_vectors, tmpdir):
     keys_dir = tmpdir.mkdir("ssm_keys")
     for k, v in sign_tx_false_test_vectors.items():
         if "wrong number" in k:
-            fingerprints, paths, values, prev_tx = prepare_signature(v.copy(), keys_dir)
+            fingerprints, paths, values, prev_tx = prepare_signature(CHAINS[0], v.copy(), keys_dir)
             with pytest.raises(exceptions.MissingValueError):
                 sign_tx(CHAINS[0], prev_tx, fingerprints, paths, values, keys_dir)
 
@@ -97,7 +97,7 @@ def test_sign_btc(sign_tx_btc_test_vectors, tmpdir):
     keys_dir = tmpdir.mkdir("ssm_keys")
     for k, v in sign_tx_btc_test_vectors.items():
       for case in v:
-        fingerprints, paths, values, prev_tx = prepare_signature(case.copy(), keys_dir)
+        fingerprints, paths, values, prev_tx = prepare_signature(k, case.copy(), keys_dir)
         tx_out = sign_tx(k, prev_tx, fingerprints, paths, values, keys_dir)
         assert tx_out == case["signed_tx"][0]
 
