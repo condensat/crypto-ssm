@@ -95,10 +95,11 @@ def test_wrong_number_inputs(sign_tx_false_test_vectors, tmpdir):
 
 def test_sign_btc(sign_tx_btc_test_vectors, tmpdir):
     keys_dir = tmpdir.mkdir("ssm_keys")
-    for _, v in sign_tx_btc_test_vectors.items():
-      fingerprints, paths, values, prev_tx = prepare_signature(v.copy(), keys_dir)
-      tx_out = sign_tx(CHAINS[0], prev_tx, fingerprints, paths, values, keys_dir)
-      assert tx_out == v["signed_tx"][0]
+    for k, v in sign_tx_btc_test_vectors.items():
+      for case in v:
+        fingerprints, paths, values, prev_tx = prepare_signature(case.copy(), keys_dir)
+        tx_out = sign_tx(k, prev_tx, fingerprints, paths, values, keys_dir)
+        assert tx_out == case["signed_tx"][0]
 
 
 # TODO: test multiple inputs and elements transaction
