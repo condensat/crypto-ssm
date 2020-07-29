@@ -3,6 +3,7 @@ import json
 import logging
 import sys
 from collections import namedtuple
+import cli.exceptions
 
 from cli.connect import (
     ConnCtx,
@@ -77,63 +78,38 @@ def getblockcount(obj):
         click.echo(blockcount)
 
 
-@cli.command(short_help='Accept a swap')
-@click.argument('payload', type=click.File('r'))
-@click.option('-o', '--output', type=click.File('w'))
-@click.option('-f', '--fee-rate', type=float, default=None,
-              help='Fee rate in BTC/Kb, if not set, it will be determined by '
-                   'the wallet.')
+@cli.command(short_help='Import a watch-only address in a Bitcoin/Elements node')
+@click.argument('address')
+@click.argument('pubkey')
+@click.argument('blindingkey')
 @click.pass_obj
-def accept(obj, payload, output, fee_rate):
-    """Accept a swap
-
-    Fund and (partially) sign a proposed transaction.
-    """
-
+def importAddress(obj, address, pubkey, blindingkey=None):
     with ConnCtx(obj.credentials, critical) as cc:
         connection = cc.connection
-        do_initial_checks(connection, obj.is_mainnet)
-        address = obj.address
-        address_type = obj.address_type
-        proposal = decode_payload(payload.read())
+        do_initial_checks(connection, obj.is_mainnet, obj.is_bitcoin)
 
-        check_wallet_unlocked(connection)
-        check_not_mine(proposal['u_address_p'], connection)
+        if obj.is_bitcoin == False and blindingkey == None:
+            raise exceptions.UnexpectedValueError("Please provide a blindingkey for importing Elements address")  
 
-        ret = swap.parse_proposed(
-            *[proposal[k] for k in PROPOSED_KEYS],
-            connection)
-        accepted_swap = swap.accept(*ret, connection, fee_rate, address, address_type)
-        encoded_payload = encode_payload(accepted_swap)
-        click.echo(encoded_payload, file=output)
+        if connection.getaddressinfo(address).get("ismine") == True:
+            raise exceptions.UnexpectedValueError("Can't import own address")
+        
+        if connection.getaddressinfo(address).get("iswatchonly") == True:
+            raise exceptions.UnexpectedValueError("This address is already watched")
 
+        if obj.is_bitcoin == True:
+            # importaddress
+            connection.importaddress(address)
+            # importpubkey
+            connection.importpubkey(pubkey)
 
-@cli.command(short_help='Finalize a swap')
-@click.argument('payload', type=click.File('r'))
-@click.option('--send', '-s', is_flag=True, help="Send the transaction.")
-@click.pass_obj
-def finalize(obj, payload, send):
-    """Finalize a swap
-
-    Sign the remaining inputs, print the transaction or broadcast it.
-    """
-
-    with ConnCtx(obj.credentials, critical) as cc:
-        connection = cc.connection
-        do_initial_checks(connection, obj.is_mainnet)
-        proposal = decode_payload(payload.read())
-        check_wallet_unlocked(connection)
-        check_not_mine(proposal['u_address_r'], connection)
-
-        (incomplete_tx, _, _, _, _, _, _) = swap.parse_accepted(
-            *[proposal[k] for k in ACCEPTED_KEYS],
-            connection)
-
-        ret = swap.finalize(incomplete_tx, connection, broadcast=send)
-
-        if send:
-            d = {'broadcast': True, 'txid': ret}
-        else:
-            d = {'broadcast': False, 'transaction': ret}
-
-        click.echo(json.dumps(d, indent=4))
+        if obj.is_bitcoin == False:
+            # importaddress
+            connection.importaddress(address)
+            # importpubkey
+            connection.importpubkey(pubkey)
+            # importblindingkey
+            connection.importblindingkey(address, blindingkey)
+            
+        if connection.getaddressinfo(address).get("iswatchonly") == False:
+            raise exceptions.Importfailed("the address couldn't be imported as watch-only")
