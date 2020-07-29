@@ -1,4 +1,6 @@
-import logging
+import logging, json
+from binascii import hexlify, unhexlify
+from os import path, mkdir
 
 from cli.exceptions import (
     UnexpectedValueError,
@@ -9,6 +11,26 @@ from cli.exceptions import (
     OwnProposalError,
 )
 
+CHAINS = [
+    'bitcoin-main', 
+    'bitcoin-test', 
+    'bitcoin-regtest', 
+    'liquidv1', 
+    'elements-regtest',
+]
+
+CA_PREFIXES = {
+    'liquidv1': 'lq',
+    'elements-regtest': 'el'
+}
+
+PREFIXES = { 
+    'bitcoin-main': 'bc', 
+    'bitcoin-test': 'tb', 
+    'bitcoin-regtest': 'bcrt',
+    'liquidv1': 'ex',
+    'elements-regtest': 'ert',
+}
 
 def btc2sat(btc):
     return round(btc * 10**8)
@@ -30,13 +52,6 @@ def is_mine(address, connection):
     if not connection.validateaddress(address)['isvalid']:
         raise InvalidAddressError('Invalid address: {}'.format(address))
     return connection.getaddressinfo(address)['ismine']
-
-
-#def check_not_mine(address, connection):
-#    """Raise an OwnProposalError if address is owned by the wallet
-#    """
-#    if is_mine(address, connection):
-#        raise OwnProposalError(OWN_PROPOSAL_ERROR_MSG)
 
 
 def check_wallet_unlocked(connection):
@@ -71,30 +86,58 @@ def do_initial_checks(connection, expect_mainnet, expect_network):
     """
     check_network(expect_mainnet, expect_network, connection)
 
-
 def set_logging(verbose):
     """Set logging level
     """
 
-    logging.basicConfig(format='liquidswap %(levelname)s %(message)s')
+    logging.basicConfig(format='SSM %(levelname)s %(message)s')
     if verbose == 1:
         logging.root.setLevel(logging.INFO)
     elif verbose > 1:
         logging.root.setLevel(logging.DEBUG)
 
+def harden_path(path):
+    hardened = []
+    for index in path:
+        if index >= pow(2, 31):
+            raise UnexpectedValueError("Can't harden an index greater than 2^31 - 1")
+        hardened.append(index + pow(2, 31))
+    return hardened
 
-#def compute_receiver_fee(connection, tx, proposer_fee):
-#    """Compute transaction fees of an accepted proposal
-#    """
-#
-#    outputs = connection.decoderawtransaction(tx)['vout']
-#    fees = [o['value'] for o in outputs if o['scriptPubKey']['type'] == 'fee']
-#    if len(fees) != 1:
-#        raise UnexpectedValueError('Missing fee')
-#    receiver_fee = btc2sat(fees[0]) - proposer_fee
-#    if receiver_fee <= 0:
-#        msg = 'Proposer fee higher than transaction fee ({}, {})'.format(
-#            proposer_fee, btc2sat(fees[0]))
-#        raise UnexpectedValueError(msg)
-#    return receiver_fee
-#
+def save_to_disk(data, file):
+    with open(file, 'wb') as f:
+        f.write(data)
+
+def retrieve_from_disk(file):
+    with open(file, 'rb') as f:
+        data = f.read()
+    return data
+
+def bin_to_hex(bin):
+    return bin.hex()
+
+def check_dir(keys_dir):
+    if path.isdir(keys_dir) == False:
+        rights = 0o600
+        try:
+            mkdir(keys_dir, rights)
+        except OSError:
+            print(f"Can't create {keys_dir}")
+    return True
+
+def parse_path(path):
+    lpath = []
+    if path.find('/') >= 0:
+        strpath = path.split('/')
+        for idx in strpath:
+            lpath.append(int(idx))
+    else:
+        lpath.append(int(path))
+    return lpath
+
+def encode_payload(data):
+    json_data = json.dumps(data)
+    data_bytes = bytes(json_data, 'utf-8')
+    data_hex = data_bytes.hex()
+
+    return data_hex

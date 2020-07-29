@@ -14,6 +14,10 @@ ENV BITCOIN_VERSION=0.19.1
 
 ENV ELEMENTS_VERSION=0.18.1.6
 
+ENV LC_ALL=C.UTF-8
+
+ENV LANG=C.UTF-8 
+
 RUN [ "/bin/bash", "-c", "/demo/scripts/bitcoin-elements-simple.sh" ]
 
 ENV PYTHONPATH='/usr/local/lib/python3.6/site-packages'

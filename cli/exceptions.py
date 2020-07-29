@@ -1,59 +1,59 @@
-class LiquidSwapError(Exception):
+class SsmError(Exception):
     """Base class for all tool errors"""
     pass
 
 
-class SameAssetError(LiquidSwapError):
+class SameAssetError(SsmError):
     """Swap between the same asset are not supported"""
 
 
-class InvalidAddressError(LiquidSwapError):
+class InvalidAddressError(SsmError):
     """Found an invalid address"""
 
 
-class OwnProposalError(LiquidSwapError):
+class OwnProposalError(SsmError):
     """Parsing your own proposal"""
 
 
-class UnexpectedValueError(LiquidSwapError):
+class UnexpectedValueError(SsmError):
     """Found an unexpected value"""
 
 
-class MissingValueError(LiquidSwapError):
+class MissingValueError(SsmError):
     """An value the tool expects is missing"""
 
 
-class FeeRateError(LiquidSwapError):
+class FeeRateError(SsmError):
     """Invalid fee rate value"""
 
 
-class UnblindError(LiquidSwapError):
+class UnblindError(SsmError):
     """Unable to fully unblind the transaction"""
 
 
-class UnsignedTransactionError(LiquidSwapError):
+class UnsignedTransactionError(SsmError):
     """Transaction is not fully signed"""
 
 
-class InvalidTransactionError(LiquidSwapError):
+class InvalidTransactionError(SsmError):
     """Transaction won't be accepted by mempool"""
 
 
-class UnsupportedLiquidVersionError(LiquidSwapError):
+class UnsupportedLiquidVersionError(SsmError):
     """Liquid version running is below minimum supported"""
 
 
-class UnsupportedWalletVersionError(LiquidSwapError):
+class UnsupportedWalletVersionError(SsmError):
     """Wallet version is below minimum supported"""
 
 
-class LockedWalletError(LiquidSwapError):
+class LockedWalletError(SsmError):
     """Wallet is locked"""
 
 
-class InvalidAssetIdError(LiquidSwapError):
+class InvalidAssetIdError(SsmError):
     """Asset id or already in the wallet"""
 
 
-class InvalidAssetLabelError(LiquidSwapError):
+class InvalidAssetLabelError(SsmError):
     """Asset label already set"""
