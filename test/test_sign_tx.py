@@ -30,6 +30,7 @@ import ssm.exceptions as exceptions
 
 CHAINS = ['bitcoin-regtest', 'elements-regtest']
 BTC_VECTORS = path.join(path.dirname(path.realpath(__file__)), "sign_tx_btc_test_vectors.json")
+ELEMENTS_VECTORS = path.join(path.dirname(path.realpath(__file__)), "sign_tx_elements_test_vectors.json")
 FALSE_VECTORS = path.join(path.dirname(path.realpath(__file__)), "sign_tx_false_test_vectors.json")
 
 ENTROPY = "91815eb893f3bc5b1798546b2519d0ac102b2563958c94fe863a65161e9098c5"
@@ -53,6 +54,11 @@ SIGNED_TX = "020000000001017dd7a26bb7c9d335440625050f3f0f93b5d777d718fe419b30f47
 @pytest.fixture
 def sign_tx_btc_test_vectors():
     with open(BTC_VECTORS) as f:
+        return json.load(f)
+
+@pytest.fixture
+def sign_tx_elements_test_vectors():
+    with open(ELEMENTS_VECTORS) as f:
         return json.load(f)
 
 @pytest.fixture
@@ -101,5 +107,10 @@ def test_sign_btc(sign_tx_btc_test_vectors, tmpdir):
         tx_out = sign_tx(k, prev_tx, fingerprints, paths, values, keys_dir)
         assert tx_out == case["signed_tx"][0]
 
-
-# TODO: test multiple inputs and elements transaction
+def test_sign_elements(sign_tx_elements_test_vectors, tmpdir):
+    keys_dir = tmpdir.mkdir("ssm_keys")
+    for k, v in sign_tx_elements_test_vectors.items():
+      for case in v:
+        fingerprints, paths, values, prev_tx = prepare_signature(k, case.copy(), keys_dir)
+        tx_out = sign_tx(k, prev_tx, fingerprints, paths, values, keys_dir)
+        assert tx_out == case["signed_tx"][0]
