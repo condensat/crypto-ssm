@@ -70,8 +70,15 @@ def prepare_signature(chain:str, case: dict, keys_dir: str):
     fingerprints = ""
     paths = ""
     values = ""
+    bkeys = []
+
+    [bkeys.append(key) for key in case["master blinding key"]]
     for key in case["hdkeys"]:
-      fingerprint = restore_hd_wallet(chain, key, "", keys_dir)
+      if bkeys[0]:
+        bkey = bkeys.pop(0)
+      else:
+        bkey = ""
+      fingerprint = restore_hd_wallet(chain, key, bkey, keys_dir)
       if not fingerprints:
         fingerprints = fingerprint
       else:
