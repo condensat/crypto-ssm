@@ -318,8 +318,4 @@ def sign_tx(chain, tx, fingerprints, paths, values, dir=KEYS_DIR):
         # now add the witness stack to the current input
         wally.tx_set_input_witness(Tx, i, witnessStack)
 
-    # Now return the hex of the signed tx
-    if chain in ['bitcoin-main', 'bitcoin-test', 'bitcoin-regtest']: 
-        return wally.tx_to_hex(Tx, wally.WALLY_TX_FLAG_USE_WITNESS) 
-    else: 
-        return wally.tx_to_hex(Tx, wally.WALLY_TX_FLAG_USE_WITNESS | wally.WALLY_TX_FLAG_USE_ELEMENTS)
+    return wally.tx_to_hex(Tx, wally.WALLY_TX_FLAG_USE_WITNESS) 
