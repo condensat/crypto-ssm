@@ -33,7 +33,8 @@ BTC_VECTORS = path.join(path.dirname(path.realpath(__file__)), "sign_tx_btc_test
 ELEMENTS_VECTORS = path.join(path.dirname(path.realpath(__file__)), "sign_tx_elements_test_vectors.json")
 FALSE_VECTORS = path.join(path.dirname(path.realpath(__file__)), "sign_tx_false_test_vectors.json")
 
-ENTROPY = "91815eb893f3bc5b1798546b2519d0ac102b2563958c94fe863a65161e9098c5"
+ENTROPY = "91815eb893f3bc5b1798546b2519d0ac102b2563958c94fe863a65161e9098c5" #elements
+EL_WIF_TEST = "cMuvbvwiFX4yXwBBxc7XBRQX3CRAWrAYrKP819wTWxDb1fwTizQE"
 WIF_TEST = "cSTYZjZgieMXDM5rmw1o4P4d8kejMEHw8C9M3UZ1o7BgAV5dtLNo"
 #WIF_MAIN = "L26Z6pZqHafG3ucbPXCfh4ZZWXMKgnCF49zsw46WHzXfuk1K2ULr"
 HDKEY_TEST = "tprv8ZgxMBicQKsPe8NFkADNQ7GMKyBkaWTRkrHStwdzcR9HvRbjbq6bNi37G3biAFtUE4hUmnuHojdqJdnqQ9qETcszgW41gn1e2GMjimt8HCQ"
