@@ -221,6 +221,14 @@ def get_btc_sighash(tx, index, scriptCode, value):
         wally.WALLY_TX_FLAG_USE_WITNESS)
     return hashToSign
 
+def get_elements_sighash(tx, index, scriptCode, value):
+    hashToSign = wally.tx_get_elements_signature_hash(tx, index, 
+        scriptCode, 
+        value, 
+        wally.WALLY_SIGHASH_ALL, 
+        wally.WALLY_TX_FLAG_USE_WITNESS)
+    return hashToSign
+
 def sign_btc_input(tx, index, privkey, value):
     # we need the value as an int in satoshis
     value = btc2sat(float(value))
@@ -232,6 +240,24 @@ def sign_btc_input(tx, index, privkey, value):
 
     # we can now calculate the signature hash
     hashToSign = get_btc_sighash(tx, index, scriptCode, value)
+
+    # We sign the signature hash with the private key
+    sig = wally.ec_sig_from_bytes(privkey, hashToSign, wally.EC_FLAG_ECDSA | wally.EC_FLAG_GRIND_R)
+
+    # We now return the signature encoded in der format and add the SIGHASH
+    return wally.ec_sig_to_der(sig) + bytearray([wally.WALLY_SIGHASH_ALL])
+
+def sign_elements_input(tx, index, privkey, value):
+    # we need the blinded value as a bytearray
+    value = bytearray.fromhex(value)
+
+    # we need the pubkey to write the ScriptCode that will be signed
+    pubkey = wally.ec_public_key_from_private_key(privkey)
+    witnessProgram = wally.hash160(pubkey)
+    scriptCode = bytearray([0x76, 0xa9, 0x14]) + witnessProgram + bytearray([0x88, 0xac])
+
+    # we can now calculate the signature hash
+    hashToSign = get_elements_sighash(tx, index, scriptCode, value)
 
     # We sign the signature hash with the private key
     sig = wally.ec_sig_from_bytes(privkey, hashToSign, wally.EC_FLAG_ECDSA | wally.EC_FLAG_GRIND_R)
@@ -281,7 +307,10 @@ def sign_tx(chain, tx, fingerprints, paths, values, dir=KEYS_DIR):
         pubkey = wally.ec_public_key_from_private_key(privkey)
 
         # we now sign the input and get the signature and pubkey to populate the witness
-        sig = sign_btc_input(Tx, i, privkey, values[i])
+        if chain in ['bitcoin-main', 'bitcoin-test', 'bitcoin-regtest']: 
+            sig = sign_btc_input(Tx, i, privkey, values[i])
+        else: 
+            sig = sign_elements_input(Tx, i, privkey, values[i])
 
         # Create a new witness stack and populate it with sig and pubkey
         witnessStack = get_witness_stack(sig, pubkey)
