@@ -277,8 +277,18 @@ def sign_tx(chain, tx, fingerprints, paths, values, dir=KEYS_DIR):
     paths = paths.split()
     values = values.split()
 
+
+    # TODO: check that the tx is SEGWIT
+
+    # Get a tx object from the tx_hex
+    if chain in ['bitcoin-main', 'bitcoin-test', 'bitcoin-regtest']: 
+        Tx = wally.tx_from_hex(tx, wally.WALLY_TX_FLAG_USE_WITNESS) 
+    else: 
+        Tx = wally.tx_from_hex(tx, wally.WALLY_TX_FLAG_USE_WITNESS | wally.WALLY_TX_FLAG_USE_ELEMENTS)
+
     # Get the number of inputs
-    inputs_len = get_number_inputs(tx)
+    inputs_len = wally.tx_get_num_inputs(Tx)
+
     # Check if all the lists are of the same length
     try:
         assert inputs_len == len(fingerprints) == len(paths) == len(values)
@@ -288,14 +298,6 @@ def sign_tx(chain, tx, fingerprints, paths, values, dir=KEYS_DIR):
                                             {len(paths)} paths, and {len(values)} values provided. 
                                             Must be the same number.
                                             """)
-
-    # TODO: check that the tx is SEGWIT
-
-    # Get a tx object from the tx_hex
-    if chain in ['bitcoin-main', 'bitcoin-test', 'bitcoin-regtest']: 
-        Tx = wally.tx_from_hex(tx, wally.WALLY_TX_FLAG_USE_WITNESS) 
-    else: 
-        Tx = wally.tx_from_hex(tx, wally.WALLY_TX_FLAG_USE_WITNESS | wally.WALLY_TX_FLAG_USE_ELEMENTS)
            
     # Now we loop on each fingerprint provided, compute the sighash and sign the same index input
     for i in range(0, inputs_len):
