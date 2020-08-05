@@ -7,7 +7,6 @@ from ssm.util import (
     harden,
     parse_path,
     save_masterkey_to_disk,
-    get_number_inputs,
     read_varint,
 )
 
@@ -27,9 +26,3 @@ def test_read_varint():
     for k, v in VARINT.items():
         res = read_varint(BytesIO(bytes.fromhex(k)))
         assert res == v
-
-def test_get_number_inputs():
-    inputs = get_number_inputs(TX)
-    assert inputs == 1
-    inputs = get_number_inputs(BTC_TXOUT)
-    assert inputs == 1
