@@ -9,6 +9,8 @@ from wallycore import (
     bip32_key_to_base58,
     BIP32_FLAG_KEY_PRIVATE,
     BIP32_FLAG_KEY_PUBLIC,
+    tx_get_num_inputs,
+    tx_get_input_witness
 )
 
 from ssm.exceptions import (
@@ -210,3 +212,13 @@ def read_varint(s):
     else:
         # anything else is just the integer
         return i
+
+def tx_input_has_witness(tx, input_index):
+    assert input_index >= 0, "Index can't be negative"
+    assert tx_get_num_inputs(tx) > input_index,"Index is out of range"
+    
+    try:
+        tx_get_input_witness(tx, input_index, 0)
+        return True
+    except ValueError:
+        return False
