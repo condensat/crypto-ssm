@@ -18,7 +18,6 @@ from ssm.util import (
     check_dir,
     parse_path,
     hdkey_to_base58,
-    get_number_inputs
 )
 
 SALT_LEN = 32
