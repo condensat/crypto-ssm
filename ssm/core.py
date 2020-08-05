@@ -18,6 +18,7 @@ from ssm.util import (
     check_dir,
     parse_path,
     hdkey_to_base58,
+    tx_input_has_witness
 )
 
 SALT_LEN = 32
@@ -276,7 +277,6 @@ def sign_tx(chain, tx, fingerprints, paths, values, dir=KEYS_DIR):
     paths = paths.split()
     values = values.split()
 
-
     # TODO: check that the tx is SEGWIT
 
     # Get a tx object from the tx_hex
@@ -300,7 +300,12 @@ def sign_tx(chain, tx, fingerprints, paths, values, dir=KEYS_DIR):
            
     # Now we loop on each fingerprint provided, compute the sighash and sign the same index input
     for i in range(0, inputs_len):
-        # We first derive the child key for the provided fingerprint and path
+        # First check if the input already has a witness. If so it means that this input was
+        # signed either by us or someone else, and we just skip it
+        if tx_input_has_witness(Tx, i) == True:
+            continue
+
+        # We derive the child key for the provided fingerprint and path
         child = get_child_from_path(chain, fingerprints[i], paths[i], dir)
 
         # From here we extract the private key that we will sign with
