@@ -272,12 +272,18 @@ def get_witness_stack(sig, pubkey):
     return witnessStack
 
 def sign_tx(chain, tx, fingerprints, paths, values, dir=KEYS_DIR):
+    """TODO: we can't know if an input is spending a segwit UTXO without access to the UTXO
+    to prevent exchanging too much data, we should rely on the client signaling a 
+    non-segwit UTXO
+    TODO: since we only need `value` for spending segwit output, maybe we could say that
+    a value of `0` means the output is a legacy
+    TODO: we still can't handle P2SH
+    """
+
     # first extract the fingerprints and paths in lists
     fingerprints = fingerprints.split()
     paths = paths.split()
     values = values.split()
-
-    # TODO: check that the tx is SEGWIT
 
     # Get a tx object from the tx_hex
     if chain in ['bitcoin-main', 'bitcoin-test', 'bitcoin-regtest']: 
