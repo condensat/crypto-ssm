@@ -112,6 +112,8 @@ def test_sign_btc(sign_tx_btc_test_vectors, tmpdir):
     for k, v in sign_tx_btc_test_vectors.items():
       for case in v:
         fingerprints, paths, values, prev_tx = prepare_signature(k, case.copy(), keys_dir)
+        if prev_tx == case["signed_tx"][0]:
+          raise ValueError("Provided unsigned and signed tx are identical")
         tx_out = sign_tx(k, prev_tx, fingerprints, paths, values, keys_dir)
         assert tx_out == case["signed_tx"][0]
 
@@ -120,5 +122,7 @@ def test_sign_elements(sign_tx_elements_test_vectors, tmpdir):
     for k, v in sign_tx_elements_test_vectors.items():
       for case in v:
         fingerprints, paths, values, prev_tx = prepare_signature(k, case.copy(), keys_dir)
+        if prev_tx == case["signed_tx"][0]:
+          raise ValueError("Provided unsigned and signed tx are identical")
         tx_out = sign_tx(k, prev_tx, fingerprints, paths, values, keys_dir)
         assert tx_out == case["signed_tx"][0]
