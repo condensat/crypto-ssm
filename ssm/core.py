@@ -249,7 +249,11 @@ def sign_btc_input(tx, index, privkey, value):
 
 def sign_elements_input(tx, index, privkey, value):
     # we need the blinded value as a bytearray
-    value = bytearray.fromhex(value)
+    try:
+        value = bytearray.fromhex(value)
+    except ValueError:
+        value = btc2sat(float(value))
+        value = wally.tx_confidential_value_from_satoshi(value)
 
     # we need the pubkey to write the ScriptCode that will be signed
     pubkey = wally.ec_public_key_from_private_key(privkey)
