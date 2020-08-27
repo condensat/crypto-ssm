@@ -101,7 +101,7 @@ def new_address(obj, fingerprint, path):
 
 @cli.command(short_help='Get the extended public key (xpub) that corresponds to some master key.')
 @click.argument('fingerprint')
-@click.option('-p', '--path', default=None, help='A 4B fingerprint that identifies the master key.')
+@click.option('-p', '--path', default="root")
 @click.pass_obj
 def get_xpub(obj, fingerprint, path):
     """Get extended public key for a said chain and masterkey.
