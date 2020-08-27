@@ -1,0 +1,22 @@
+version: '3.7'
+services:
+  crypto_ssm:
+    image: registry.condensat.space/crypto-ssm:0.1.0
+    container_name: crypto_ssm
+    restart: always
+    command: python3 /crypto-ssm/server/server.py
+    volumes:
+      - ssm_keys:/ssm_keys
+
+  ssm_tor:
+    image: registry.condensat.space/crypto-ssm-tor:0.1.0
+    container_name: ssm_tor
+    restart: always
+    depends_on:
+      - crypto_ssm
+    volumes:
+      - ./proxy_torrc:/home/tor/.torrc:ro
+      - ./ssm-service:/var/lib/tor/ssm-service
+
+volumes:
+  ssm_keys:

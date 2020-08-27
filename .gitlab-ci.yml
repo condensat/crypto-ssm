@@ -1,0 +1,41 @@
+stages:
+  - build
+  - test
+  - deploy
+
+docker_build:
+  stage: build
+  script: make build
+
+tests:
+  stage: test
+  script: make test
+
+publish:
+  stage: deploy
+  script: make deploy
+  only:
+    refs:
+        - master
+        - dev
+
+tor:
+  stage: deploy
+  script: make -C tor deploy
+  only:
+    refs:
+        - master
+
+clean:
+  stage: .pre
+  script: make clean
+  only:
+    refs:
+        - dev
+
+deep-clean:
+  stage: .pre
+  script: make deep-clean
+  only:
+    refs:
+        - master
