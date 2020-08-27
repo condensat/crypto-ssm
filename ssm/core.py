@@ -203,8 +203,8 @@ def restore_hd_wallet(chain, hdkey, bkey=None, dir=KEYS_DIR):
 
     return str(fingerprint.hex())
 
-def get_xpub(chain, fingerprint, path):
-    if path is None:
+def get_xpub(chain, fingerprint, path, dir=KEYS_DIR):
+    if path is 'root':
         masterkey = get_masterkey_from_disk(chain, fingerprint)
     else:
         masterkey = get_child_from_path(chain, fingerprint, path, dir)
