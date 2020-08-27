@@ -210,11 +210,6 @@ def get_xpub(chain, fingerprint, path):
         masterkey = get_child_from_path(chain, fingerprint, path, dir)
     return hdkey_to_base58(masterkey, False)
 
-def get_xprv(chain, fingerprint):
-    masterkey = get_masterkey_from_disk(chain, fingerprint)
-    # now return the xprv in its base58 readable format
-    return hdkey_to_base58(masterkey, True)
-
 def get_btc_sighash(tx, index, scriptCode, value):
     hashToSign = wally.tx_get_btc_signature_hash(tx, index, 
         scriptCode, 
