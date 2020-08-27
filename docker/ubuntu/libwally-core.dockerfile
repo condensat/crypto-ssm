@@ -13,6 +13,6 @@ RUN make &&\
     make install
 
 
-FROM ubuntu:bionic
+FROM ubuntu:focal
 
 COPY --from=builder /stage/local /usr/local

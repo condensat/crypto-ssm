@@ -11,15 +11,15 @@ ENV PATH="$VIRTUAL_ENV/bin:$PATH"
 RUN pip install --prefix /stage/local .
 
 
-FROM ubuntu:bionic
+FROM ubuntu:focal
 
 RUN apt-get update &&\
-    apt-get install -y --no-install-recommends python3.6-minimal libpython3.6 &&\
+    apt-get install -y --no-install-recommends python3.8-minimal libpython3.8 &&\
     apt-get -y autoremove &&\
     apt-get -y clean &&\
     rm -rf /var/lib/apt/lists/* /var/cache/* /tmp/* /usr/share/locale/* /usr/share/man /usr/share/doc /lib/xtables/libip6*
 
 COPY --from=builder /stage/local /usr/local
 
-ENV PYTHONPATH='/usr/local/lib/python3.6/site-packages'
-CMD [ "python3.6m" ]
+ENV PYTHONPATH='/usr/local/lib/python3.8/site-packages'
+CMD [ "python3" ]

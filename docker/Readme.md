@@ -1,6 +1,6 @@
 # Docker images
 
-Images are base on ubuntu (bionic).
+Images are base on ubuntu (focal).
 Default version is `0.7.7`.
   > --build-args LIBWALLY_CORE_VERSION=0.7.7
 

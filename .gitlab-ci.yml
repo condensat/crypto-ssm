@@ -19,6 +19,13 @@ publish:
         - master
         - dev
 
+tor:
+  stage: deploy
+  script: make -C tor deploy
+  only:
+    refs:
+        - master
+
 clean:
   stage: .pre
   script: make clean
