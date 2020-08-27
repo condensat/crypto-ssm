@@ -100,10 +100,10 @@ def new_address(obj, fingerprint, path):
     click.echo(json.dumps(return_value))
 
 @cli.command(short_help='Get the extended public key (xpub) that corresponds to some master key.')
-@click.option('-f', '--fingerprint', required=True,
-                help='A 4B fingerprint that identifies the master key.')
+@click.argument('fingerprint')
+@click.option('-p', '--path', default=None, help='A 4B fingerprint that identifies the master key.')
 @click.pass_obj
-def get_xpub(obj, fingerprint):
+def get_xpub(obj, fingerprint, path):
     """Get extended public key for a said chain and masterkey.
     Each masterkey is identified through its fingerprint that have been returned when it was created.
     Return value is the xpub that allows to derive all the public keys and address without knowledge
@@ -111,11 +111,11 @@ def get_xpub(obj, fingerprint):
     """
     #TODO: maybe we could take a path and return a derived xpub? Do we have a use case for that?
 
-    logging.info(f"Getting the xpub for {obj.chain} and master key {fingerprint}.")
+    logging.info(f"Getting the xpub for {obj.chain} and master key {fingerprint} on path {path}.")
 
-    xpub = ssm.get_xpub(obj.chain, fingerprint)
+    xpub = ssm.get_xpub(obj.chain, fingerprint, path)
 
-    logging.debug(f"{obj.chain} {fingerprint} masterkey's xpub is {xpub}")
+    logging.debug(f"{obj.chain} {fingerprint} masterkey's xpub on {path} is {xpub}")
 
     click.echo(xpub)
 

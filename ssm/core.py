@@ -203,9 +203,11 @@ def restore_hd_wallet(chain, hdkey, bkey=None, dir=KEYS_DIR):
 
     return str(fingerprint.hex())
 
-def get_xpub(chain, fingerprint):
-    masterkey = get_masterkey_from_disk(chain, fingerprint)
-    # now return the xpub in its base58 readable format
+def get_xpub(chain, fingerprint, path):
+    if path is None:
+        masterkey = get_masterkey_from_disk(chain, fingerprint)
+    else:
+        masterkey = get_child_from_path(chain, fingerprint, path, dir)
     return hdkey_to_base58(masterkey, False)
 
 def get_xprv(chain, fingerprint):
