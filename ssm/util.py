@@ -1,8 +1,19 @@
 import logging, json
 from binascii import hexlify, unhexlify
+from io import BytesIO
 from os import path, mkdir
+from wallycore import (
+    sha256d,
+    bip32_key_unserialize,
+    bip32_key_serialize,
+    bip32_key_to_base58,
+    BIP32_FLAG_KEY_PRIVATE,
+    BIP32_FLAG_KEY_PUBLIC,
+    tx_get_num_inputs,
+    tx_get_input_witness
+)
 
-from cli.exceptions import (
+from ssm.exceptions import (
     UnexpectedValueError,
     UnsupportedLiquidVersionError,
     UnsupportedWalletVersionError,
@@ -32,6 +43,11 @@ PREFIXES = {
     'elements-regtest': 'ert',
 }
 
+KEYS_DIR = "/ssm-keys"
+BLINDING_KEYS_DIR = "blinding_keys"
+
+INITIAL_HARDENED_INDEX = pow(2, 31)
+
 def btc2sat(btc):
     return round(btc * 10**8)
 
@@ -47,6 +63,8 @@ def values2btc(m):
 def sort_dict(d):
     return {k: v for k, v in sorted(d.items())}
 
+def hdkey_to_base58(hdkey, private=True):
+    return bip32_key_to_base58(hdkey, BIP32_FLAG_KEY_PRIVATE if private == True else BIP32_FLAG_KEY_PUBLIC)
 
 def is_mine(address, connection):
     if not connection.validateaddress(address)['isvalid']:
@@ -96,13 +114,21 @@ def set_logging(verbose):
     elif verbose > 1:
         logging.root.setLevel(logging.DEBUG)
 
-def harden_path(path):
-    hardened = []
-    for index in path:
-        if index >= pow(2, 31):
+def harden(idx):
+    if idx[-1] is '\'' or idx[-1] is 'h':
+        try:
+            int(idx[:-1])
+        except ValueError as e:
+            print(e.args)
+        idx = idx[:-1]
+        if int(idx) >= INITIAL_HARDENED_INDEX:
             raise UnexpectedValueError("Can't harden an index greater than 2^31 - 1")
-        hardened.append(index + pow(2, 31))
-    return hardened
+        return int(idx) + INITIAL_HARDENED_INDEX
+    else:
+        try:
+            return int(idx)
+        except ValueError as e:
+            print(e.args)
 
 def save_to_disk(data, file):
     with open(file, 'wb') as f:
@@ -130,14 +156,69 @@ def parse_path(path):
     if path.find('/') >= 0:
         strpath = path.split('/')
         for idx in strpath:
-            lpath.append(int(idx))
+            lpath.append(harden(idx))
     else:
-        lpath.append(int(path))
+        lpath.append(harden(path))
     return lpath
 
-def encode_payload(data):
-    json_data = json.dumps(data)
-    data_bytes = bytes(json_data, 'utf-8')
-    data_hex = data_bytes.hex()
+def get_txid(tx):
+    "Return the double sha256 hash of the tx"
+    return sha256d(tx)
 
-    return data_hex
+def get_masterkey_from_disk(chain, fingerprint, blindingkey=False, dir=KEYS_DIR):
+    if blindingkey:
+        dir = path.join(dir, BLINDING_KEYS_DIR)
+    else:
+        dir = path.join(dir, chain)
+    check_dir(dir)
+    filename = path.join(dir, fingerprint)
+    masterkey_bin = retrieve_from_disk(filename)
+    if blindingkey:
+        return masterkey_bin
+    else:
+        return bip32_key_unserialize(masterkey_bin)
+
+def save_masterkey_to_disk(chain, masterkey, fingerprint, blindingkey=False, dir=KEYS_DIR):
+    if blindingkey:
+        dir = path.join(dir, BLINDING_KEYS_DIR)
+        masterkey_bin = masterkey
+    else:
+        dir = path.join(dir, chain)
+        masterkey_bin = bip32_key_serialize(masterkey, BIP32_FLAG_KEY_PRIVATE)
+    check_dir(dir)
+    # TODO: check that a file with the same fingerprint doesn't exist. 
+    # The probability to have a collision on a fingerprint is small, but still
+    filename = path.join(dir, fingerprint)
+    save_to_disk(masterkey_bin, filename)
+
+def save_salt_to_disk(fingerprint, salt):
+    dir = path.join(KEYS_DIR, 'salt')
+    check_dir(dir)
+    filename = path.join(dir, fingerprint)
+    save_to_disk(salt, filename)
+
+def read_varint(s):
+    '''read_varint reads a variable integer from a stream'''
+    i = s.read(1)[0]
+    if i == 0xfd:
+        # 0xfd means the next two bytes are the number
+        return int.from_bytes(s.read(2), 'little')
+    elif i == 0xfe:
+        # 0xfe means the next four bytes are the number
+        return int.from_bytes(s.read(4), 'little')
+    elif i == 0xff:
+        # 0xff means the next eight bytes are the number
+        return int.from_bytes(s.read(8), 'little')
+    else:
+        # anything else is just the integer
+        return i
+
+def tx_input_has_witness(tx, input_index):
+    assert input_index >= 0, "Index can't be negative"
+    assert tx_get_num_inputs(tx) > input_index,"Index is out of range"
+    
+    try:
+        tx_get_input_witness(tx, input_index, 0)
+        return True
+    except ValueError:
+        return False

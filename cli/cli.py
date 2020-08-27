@@ -3,19 +3,19 @@ import json
 import logging
 import sys
 from collections import namedtuple
-import cli.exceptions as exceptions
-import cli.ssm as ssm
 
-from cli.connect import (
+import ssm.exceptions as exceptions
+import ssm.core as ssm
+
+from ssm.connect import (
     ConnCtx,
     BITCOIN_REGTEST_RPC_PORT,
     LIQUID_REGTEST_RPC_PORT
 )
 
-from cli.util import (
+from ssm.util import (
     CHAINS,
     set_logging,
-    encode_payload,
 )
 
 def critical(title='', message='', start_over=True):
@@ -68,19 +68,33 @@ def new_master(obj, entropy, isbytes):
 
     fingerprint = ssm.generate_new_hd_wallet(obj.chain, entropy, isbytes)
 
-    click.echo(encode_payload(fingerprint))
+    click.echo(fingerprint)
 
     logging.info(f"New master key generated for {obj.chain}! Fingerprint: {fingerprint}")
+
+@cli.command(short_help='Restore masterkey from base58 xprv')
+@click.argument('hdkey')
+@click.option('-b', '--blindingkey', default=None,
+                help='A 64B hex encoded master blindingkey for Elements wallet.')
+@click.pass_obj
+def restore_master(obj, hdkey, blindingkey):
+    """Save the master key provided in the ssm-keys dir.
+    For debugging purpose, don't use this in production.
+    """
+
+    logging.info(f"Restore master key {hdkey} for {obj.chain}")
+
+    fingerprint = ssm.restore_hd_wallet(obj.chain, hdkey, blindingkey)
+
+    click.echo(fingerprint)
 
 @cli.command(short_help='Generate a new address for chain and master key')
 @click.option('-f', '--fingerprint', required=True,
                 help='A 4B fingerprint that identifies the master key.')
-@click.option('-p', '--path',
+@click.option('-p', '--path', required=True,
                 help='The path of the address to derivate.')
-@click.option('--hardened/--not-hardened', default=True,
-                help='If the address must be derived using hardened path.')
 @click.pass_obj
-def new_address(obj, fingerprint, path, hardened):
+def new_address(obj, fingerprint, path):
     """Get new address for a said chain and masterkey.
     Each masterkey is identified through its fingerprint that have been returned when it was created.
     Return value is a new segwit native address, along with other information that might be necessary
@@ -91,7 +105,7 @@ def new_address(obj, fingerprint, path, hardened):
 
     logging.info(f"Generating a new address for {obj.chain} and master key {fingerprint}.")
 
-    address, pubkey, bkey = ssm.get_address_from_path(obj.chain, fingerprint, path, hardened)
+    address, pubkey, bkey = ssm.get_address_from_path(obj.chain, fingerprint, path)
 
     return_value = {
         'address': address,
@@ -101,9 +115,7 @@ def new_address(obj, fingerprint, path, hardened):
     if bkey is not None:
         return_value['blinding_key'] = bytes(bkey).hex()
 
-    logging.debug(return_value)
-
-    click.echo(encode_payload(return_value))
+    click.echo(json.dumps(return_value))
 
 @cli.command(short_help='Get the extended public key (xpub) that corresponds to some master key.')
 @click.option('-f', '--fingerprint', required=True,
@@ -115,11 +127,48 @@ def get_xpub(obj, fingerprint):
     Return value is the xpub that allows to derive all the public keys and address without knowledge
     of any private key.
     """
+    #TODO: maybe we could take a path and return a derived xpub? Do we have a use case for that?
 
     logging.info(f"Getting the xpub for {obj.chain} and master key {fingerprint}.")
 
     xpub = ssm.get_xpub(obj.chain, fingerprint)
 
-    logging.debug(f"{obj.chain} xpub is {xpub}")
+    logging.debug(f"{obj.chain} {fingerprint} masterkey's xpub is {xpub}")
 
-    click.echo(encode_payload(xpub))
+    click.echo(xpub)
+
+@cli.command(short_help='Sign all or some inputs of a serialized transaction.')
+@click.argument('transaction')
+@click.argument('fingerprints')
+@click.argument('paths')
+@click.argument('values')
+@click.pass_obj
+def sign_tx(obj, transaction, fingerprints, paths, values):
+    """Take an unsigned, complete transaction, and return it signed and ready for broadcast.
+    For each fingerprint, we need one path, but a fingerprint can be repeated as many time as necessary.
+    SSM will take the fingerprint and the paths in the provided order, derivate the private key and try
+    to sign the outputs in the same order.
+    If number of fingerprints/paths is less than number of inputs, it will sign all that it can and return the tx as it is.
+    Fingerprints and paths must be space separated in a single string. 
+    """
+
+    #logging.info(f"Signing tx {get_txid(transaction)} for {obj.chain}.")
+
+    signed_tx = ssm.sign_tx(obj.chain, transaction, fingerprints, paths, values)
+
+    logging.debug(f"signed tx is {signed_tx}")
+
+    click.echo(signed_tx)
+
+@cli.command(short_help='Get the extended private key (xprv) that corresponds to some master key.')
+@click.option('-f', '--fingerprint', required=True,
+                help='A 4B fingerprint that identifies the master key.')
+@click.pass_obj
+def get_xprv(obj, fingerprint):
+    """Get extended private key for a said chain and masterkey.
+    FOR DEBUGGING PURPOSE ONLY, TURN IT OFF IN PRODUCTION
+    """
+
+    xprv = ssm.get_xprv(obj.chain, fingerprint)
+
+    click.echo(xprv)
