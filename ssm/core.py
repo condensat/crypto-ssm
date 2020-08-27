@@ -82,16 +82,26 @@ def get_blinding_key_from_address(address, chain, fingerprint):
 
     return private_blinding_key
 
-def generate_masterkey_from_mnemonic(mnemonic, chain, passphrase=None, dir=KEYS_DIR):
+def generate_masterkey_from_mnemonic(mnemonic, chain, size, passphrase=None, dir=KEYS_DIR):
     """Generate a masterkey pair + a master blinding key if chain is Elements.
+    seed is 64B by default but we can also use only the first 32B encoded in WIF
+    in case we need to be compatible with Bitcoin Core wallet. 
     """
     if chain in ['bitcoin-main', 'liquidv1']:
         version = wally.BIP32_VER_MAIN_PRIVATE
+        wif_prefix = wally.WALLY_ADDRESS_VERSION_WIF_MAINNET
     else:
         version = wally.BIP32_VER_TEST_PRIVATE
+        wif_prefix = wally.WALLY_ADDRESS_VERSION_WIF_TESTNET
     
     # first get the seed from the mnemonic.
     seed = generate_seed_from_mnemonic(mnemonic, passphrase)
+
+    # If size is 32, we truncate the seed down to 32B in order to import it in Bitcoin Core
+    if size == '32':
+        seed = seed[:32]
+        wif = wally.wif_from_bytes(seed, wif_prefix, wally.WALLY_WIF_FLAG_COMPRESSED)
+        logging.debug(f"Seed in WIF is {wif}")
 
     # Now let's derivate the master privkey from seed
     masterkey = wally.bip32_key_from_seed(seed, version, 0)
@@ -143,7 +153,7 @@ def get_address_from_path(chain, fingerprint, derivation_path, dir=KEYS_DIR):
 
     return address, pubkey, blinding_privkey
 
-def generate_new_hd_wallet(chain, entropy, is_bytes):
+def generate_new_hd_wallet(chain, entropy, is_bytes, size):
     # First make sure we know for which network we need a seed
     try:
         assert chain in CHAINS
