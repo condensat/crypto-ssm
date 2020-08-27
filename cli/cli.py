@@ -73,10 +73,8 @@ def new_master(obj, entropy, isbytes):
     logging.info(f"New master key generated for {obj.chain}! Fingerprint: {fingerprint}")
 
 @cli.command(short_help='Generate a new address for chain and master key')
-@click.option('-f', '--fingerprint', required=True,
-                help='A 4B fingerprint that identifies the master key.')
-@click.option('-p', '--path', required=True,
-                help='The path of the address to derivate.')
+@click.argument('fingerprint')
+@click.argument('path')
 @click.pass_obj
 def new_address(obj, fingerprint, path):
     """Get new address for a said chain and masterkey.
