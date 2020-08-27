@@ -115,7 +115,7 @@ def set_logging(verbose):
         logging.root.setLevel(logging.DEBUG)
 
 def harden(idx):
-    if idx[-1] is '\'' or idx[-1] is 'h':
+    if idx[-1] == '\'' or idx[-1] == 'h':
         try:
             int(idx[:-1])
         except ValueError as e:

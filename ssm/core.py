@@ -189,7 +189,7 @@ def restore_hd_wallet(chain, hdkey, bkey=None, dir=KEYS_DIR):
     # If we are on Elements, check that the blinding key is provided
     if chain in ['liquidv1', 'elements-regtest']:
         try:
-            assert int(len(bkey)/2) is 64
+            assert int(len(bkey)/2) == 64
         except AssertionError:
             raise exceptions.UnexpectedValueError("A 64B hex string must be provided.")
 
@@ -208,7 +208,7 @@ def restore_hd_wallet(chain, hdkey, bkey=None, dir=KEYS_DIR):
     return str(fingerprint.hex())
 
 def get_xpub(chain, fingerprint, path, dir=KEYS_DIR):
-    if path is 'root':
+    if path == 'root':
         masterkey = get_masterkey_from_disk(chain, fingerprint)
     else:
         masterkey = get_child_from_path(chain, fingerprint, path, dir)
