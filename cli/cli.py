@@ -52,21 +52,22 @@ def cli(ctx, verbose, chain, password):
 
 
 @cli.command(short_help='Generate a new seed and master key for the chain')
-@click.option('-e', '--entropy', required=True,
-                help='Either a password or some entropy to use for seed generation.')
+@click.argument('entropy')
 @click.option('--isbytes/--notbytes', default=False,
-                help='If set, entropy is to be treated as an hex byte string rather than a password.')
+                help='If set, entropy is to be used directly and will not be hashed.')
+@click.option('-s', '--size', type=click.Choice(['32', '64']), default='64',
+                help='Size of the seed in bytes, for compatibility with other softwares.')
 @click.pass_obj
-def new_master(obj, entropy, isbytes):
+def new_master(obj, entropy, isbytes, size):
     """Generate a new seed and the corresponding master key for BIP32 derivation.
-    The new seed can use either a password and a salt, or some entropy (at least 32B).
+    The new seed can use either a password and a salt, or some entropy (32B).
     At least one of 2 is required.
     Return value is the fingerprint of the new master key.
     """
 
     logging.info(f"Generating a new master key for {obj.chain}.")
 
-    fingerprint = ssm.generate_new_hd_wallet(obj.chain, entropy, isbytes)
+    fingerprint = ssm.generate_new_hd_wallet(obj.chain, entropy, isbytes, size)
 
     click.echo(fingerprint)
 
