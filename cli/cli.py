@@ -159,16 +159,3 @@ def sign_tx(obj, transaction, fingerprints, paths, values):
     logging.debug(f"signed tx is {signed_tx}")
 
     click.echo(signed_tx)
-
-@cli.command(short_help='Get the extended private key (xprv) that corresponds to some master key.')
-@click.option('-f', '--fingerprint', required=True,
-                help='A 4B fingerprint that identifies the master key.')
-@click.pass_obj
-def get_xprv(obj, fingerprint):
-    """Get extended private key for a said chain and masterkey.
-    FOR DEBUGGING PURPOSE ONLY, TURN IT OFF IN PRODUCTION
-    """
-
-    xprv = ssm.get_xprv(obj.chain, fingerprint)
-
-    click.echo(xprv)
