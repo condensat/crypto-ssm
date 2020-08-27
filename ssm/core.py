@@ -25,7 +25,7 @@ SALT_LEN = 32
 HMAC_COST = 2048
 
 def generate_entropy_from_password(password):
-    """we can generate entropy from some password. The randomly generated salt also need to be saved.
+    """we can generate entropy from some password. A salt is generated randomly and then discarded.
     """
     # Fail if password is None or empty
     if len(password) < 1:
@@ -38,13 +38,12 @@ def generate_entropy_from_password(password):
     _pass = password.encode('utf-8')
     logging.info(f"Generating salt of {SALT_LEN} bytes")
     salt = bytearray(urandom(SALT_LEN))
-    logging.debug(f"Salt is {bin_to_hex(salt)}")
 
     # Let's generate entropy from the provided password
     entropy = bytearray('0'.encode('utf-8') * 64)
     entropy = wally.pbkdf2_hmac_sha512(_pass, salt, 0, HMAC_COST)
 
-    return entropy, salt
+    return entropy
 
 def generate_mnemonic_from_entropy(entropy):
     """Generate a mnemonic of either 12 or 24 words.
@@ -167,16 +166,11 @@ def generate_new_hd_wallet(chain, entropy, is_bytes, size):
         # This can be useful for testing, but it is not recommended for production since the 
         # entropy that is passed in argument is not salted
         mnemonic = generate_mnemonic_from_entropy(bytes.fromhex(entropy))
-        salt = None
     else:
-        stretched_key, salt = generate_entropy_from_password(entropy)
+        stretched_key = generate_entropy_from_password(entropy)
         mnemonic = generate_mnemonic_from_entropy(stretched_key[:32])
     
-    fingerprint = generate_masterkey_from_mnemonic(mnemonic, chain)
-
-    if salt:
-        # We now save the salt in a file under the fingerprint name
-        save_salt_to_disk(fingerprint, salt)
+    fingerprint = generate_masterkey_from_mnemonic(mnemonic, chain, size)
 
     return fingerprint
 
