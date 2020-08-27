@@ -55,20 +55,23 @@ def test_bip39_entropy_to_mnemonic(bip39_test_vectors):
         assert mnemomic == v[0]
 
 def test_bip39_mnemonic_to_seed(bip39_test_vectors):
-    for k, v in bip39_test_vectors.items():
+    for _, v in bip39_test_vectors.items():
         seed = generate_seed_from_mnemonic(v[0], PASSPHRASE)
         assert seed.hex() == v[1]
 
 def test_bip39_seed_to_hdkey(bip39_test_vectors, tmpdir):
     keys_dir = tmpdir.mkdir("ssm_keys")
+    size = '64'
     fingerprints = []
     xpriv = []
-    for k, v in bip39_test_vectors.items():
-        fingerprint = generate_masterkey_from_mnemonic(v[0], CHAIN, PASSPHRASE, keys_dir)
+    for _, v in bip39_test_vectors.items():
+        fingerprint = generate_masterkey_from_mnemonic(v[0], CHAIN, size, PASSPHRASE, keys_dir)
         xpriv.append(v[2])
         fingerprints.append(fingerprint)
 
     for i in range(0, len(fingerprints)):
         hdkey = get_masterkey_from_disk(CHAIN, fingerprints[i], False, keys_dir)
         assert hdkey_to_base58(hdkey) == xpriv[i]
+
+#TODO: test the generation of 32B seed, maybe find a test set from Bitcoin Core?
         
